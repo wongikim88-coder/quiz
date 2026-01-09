@@ -58,7 +58,7 @@ app = FastAPI(title="Quiz Local AI Server", version="1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://allenkim.github.io",
+        "https://wongikim88-coder.github.io",
         "http://localhost:5500",
         "http://127.0.0.1:5500",
     ],
