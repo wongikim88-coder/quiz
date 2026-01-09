@@ -1,0 +1,3148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>민법 객관식 퀴즈</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <style>
+    :root { --bg:#f6f7fb; --card:#fff; --text:#111827; --muted:#6b7280; --line:#e5e7eb; }
+    body { margin:0; font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 16px; padding-bottom: 28px; }
+    .card { background:var(--card); border-radius:16px; padding:18px; box-shadow: 0 8px 24px rgba(0,0,0,.06); position:relative; touch-action: pan-y; }
+    .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; color:#555; font-size:14px; gap: 10px; flex-wrap: wrap; }
+    .pill { background:#eef2ff; color:#3730a3; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px; }
+    .pill.gray { background:#f3f4f6; color:#374151; }
+
+    .timerPill{
+      font-variant-numeric: tabular-nums;
+      min-width: 72px;
+      text-align: center;
+      letter-spacing: .5px;
+    }
+    .timerPill.warn{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+
+    h1 { font-size:18px; margin: 0 0 12px; line-height:1.45; }
+
+    .choice { display:block; width:100%; text-align:left; border:1px solid var(--line); background:#fff; padding:12px; border-radius:12px; margin:10px 0; cursor:pointer; transition: transform .06s ease; }
+    .choice:active { transform: scale(0.99); }
+    .choice.selected { border-color:#4c7dff; box-shadow: 0 0 0 3px rgba(76,125,255,.12); }
+    .choice.correct { border-color:#22c55e; background:#f0fdf4; }
+    .choice.wrong { border-color:#ef4444; background:#fef2f2; }
+
+    .nav { display:flex; justify-content:center; align-items:center; gap: 10px; margin-top: 14px; }
+    .iconBtn {
+      width:42px; height:42px; border-radius:14px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%);
+      color:#111827; font-weight:900; font-size:18px; cursor:pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,.06);
+      display:flex; align-items:center; justify-content:center;
+      user-select:none;
+      transition: transform .08s ease, box-shadow .12s ease;
+    }
+    .iconBtn:active { transform: scale(0.97); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+    .iconBtn:disabled { opacity:.35; cursor:not-allowed; box-shadow:none; }
+
+    button { border:0; padding:12px; border-radius:12px; font-weight:800; cursor:pointer; }
+    .btn { background:#111827; color:#fff; }
+    .btn.secondary { background:#e5e7eb; color:#111827; }
+    .btn.tertiary { background:#eef2ff; color:#1f2a7a; }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+
+    .result { margin-top:12px; font-weight:900; min-height: 24px; }
+    .result.ok { color:#16a34a; }
+    .result.no { color:#dc2626; }
+
+    .explain { margin-top:10px; background:#f8fafc; border:1px solid var(--line); padding:12px; border-radius:12px; display:none; white-space:pre-wrap; line-height:1.5; }
+    .explain.show { display:block; }
+
+    .row { display:flex; gap:10px; margin-top:12px; flex-wrap: wrap; }
+    .small { flex: none; width: 160px; }
+
+    .hint { color:var(--muted); font-size:13px; margin-top:10px; line-height:1.45; }
+    .banner { margin-top:10px; padding:10px 12px; background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; color:#7c2d12; display:none; }
+    .banner.show { display:block; }
+
+    .swipeLayer { will-change: transform, opacity; transition: transform .18s ease, opacity .18s ease; }
+    .swipeOutLeft { transform: translateX(-18px); opacity: .0; }
+    .swipeOutRight { transform: translateX(18px); opacity: .0; }
+    .swipeIn { transform: translateX(0); opacity: 1; }
+
+    /* 완료 화면 */
+    .doneBox {
+      margin-top: 8px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #ffffff;
+      line-height: 1.6;
+    }
+    .doneTitle { font-size:18px; font-weight:900; margin: 0 0 6px; }
+    .doneMeta { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+    .kv { display:flex; gap:10px; flex-wrap: wrap; margin-top: 10px; }
+    .kv .pill { font-size: 13px; }
+
+    /* 완료 화면 점수 강조 */
+    .scoreBig {
+      width: 100%;
+      text-align: center;
+      font-size: 36px;
+      font-weight: 900;
+      color: #111827;
+      padding: 14px 0;
+      border-radius: 14px;
+      background: #eef2ff;
+    }
+  
+    /* 홈 화면 */
+    .homeTitle { font-size: 22px; font-weight: 900; margin: 0 0 6px; }
+    .homeSub { color: var(--muted); font-size: 13px; margin: 0 0 14px; line-height: 1.5; }
+    .subjectGrid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 520px) { .subjectGrid { grid-template-columns: 1fr 1fr; } }
+
+    .subjectCard {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,.05);
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .subjectHead { display:flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .subjectName { font-size: 16px; font-weight: 900; margin: 0; }
+    .subjectDesc { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .subjectMeta { display:flex; gap: 8px; flex-wrap: wrap; align-items:center; }
+    .bar { height: 10px; border-radius: 999px; background: #f3f4f6; overflow: hidden; border: 1px solid var(--line); }
+    .bar > div { height: 100%; background: #111827; width: 0%; }
+    .subjectActions { display:flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+    .homeBtn { flex: 1; min-width: 130px; }
+    .ghost { background: #f3f4f6; color: #111827; }
+    .chip { font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 999px; background:#eef2ff; color:#1f2a7a; }
+    .chip.gray { background:#f3f4f6; color:#374151; }
+    .topHome { display:flex; justify-content:space-between; align-items:center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+
+  
+    /* 해설에서 정답 보기 하이라이트 */
+    .exCorrectLine{
+      background: #fff7cc;
+      border: 1px solid #fde68a;
+      padding: 2px 4px;
+      border-radius: 6px;
+      font-weight: 900;
+    }
+
+  
+      
+    
+    /* ====== AI에게 물어보세요 (로컬 서버) : ChatGPT 스타일 ====== */
+    .aiBox{
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 8px 24px rgba(0,0,0,.06);
+    }
+    .aiHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #f9fafb;
+      border-bottom: 1px solid var(--line);
+    }
+    .aiTitle{
+      font-weight: 900;
+      font-size: 13px;
+      margin:0;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+    .aiBadge{
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #fee2e2;
+      color:#991b1b;
+    }
+    .aiBtn{
+      background:#111827;
+      color:#fff;
+      border:0;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-weight: 900;
+      cursor:pointer;
+      font-size: 12px;
+    }
+    .aiBtn.secondary{
+      background:#e5e7eb;
+      color:#111827;
+    }
+    .aiBtn.danger{
+      background:#fee2e2;
+      color:#991b1b;
+    }
+    .aiBody{
+      position: relative;
+      padding-top: 28px; /* 8px(선 위치) + 20px(여백) */
+    }
+
+    .aiBody::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 15px;          /* ← 요청한 값 */
+  height: 1px;
+  background: var(--line);
+    }
+
+
+
+display:none;
+      flex: 1;
+      min-height: 0;
+      padding: 0;
+      background:#fff;
+    }
+    .aiBody.show{ display:flex; flex-direction: column; }
+
+    /* 메시지 영역: 버블 */
+    .aiMsgs{
+      padding-top: 20px;
+      flex: 1;
+      min-height: 0;
+      overflow:auto;
+      padding: 6px;
+      padding-bottom: calc(var(--aiComposerH, 74px) + 14px);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #ffffff;
+    }
+    .aiBubble{
+      display: inline-block;
+      max-width: 92%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      margin: 8px 0;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 13px;
+      border: 1px solid transparent;
+    }
+    .aiBubble.user{
+      margin-left: auto;
+      display: block;
+      background: #111827;
+      color: #ffffff;
+      border-top-right-radius: 6px;
+    }
+    .aiBubble.ai{
+      margin-right: auto;
+      display: block;
+      background: #f3f4f6;
+      color:#111827;
+      border-top-left-radius: 6px;
+    }
+    .aiBubble.status{
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      background: #fff7ed;
+      color:#7c2d12;
+      border: 1px solid #fed7aa;
+      text-align: center;
+      font-weight: 800;
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+
+    /* ChatGPT 스타일 입력 컴포저 */
+        .aiComposer{
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+/* 하단 고정 입력바 (1줄) */
+      display: grid;
+      grid-template-columns: 1fr 44px;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 12px;
+      padding-bottom: env(safe-area-inset-bottom);
+      border-top: 1px solid var(--line);
+      background:#ffffff;
+
+      /* ❌ sticky 비활성화: 삼성 인터넷/크롬(WebView) fixed↔sticky 중첩 렌더 버그 회피 */
+      position: relative;
+      bottom: auto;
+      z-index: 2;
+
+flex: 0 0 auto;
+      margin: 0;
+    }
+    .aiIconBtn{
+      width:40px; height:40px;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+      cursor: pointer;
+      user-select:none;
+    }
+        .aiPrompt{
+            min-width: 0;
+width: 100%;
+      height: 36px;          /* 1줄 고정 */
+      border: 1px solid var(--line);
+      border-radius: 12px;   /* 살짝 둥글게 */
+      outline: none;
+      padding: 8px 12px;
+      line-height: 20px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #ffffff;
+      box-sizing: border-box;
+      resize: none;
+      overflow: hidden;
+    }
+    .aiSend{
+      width:44px; height:36px;
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      background: #111827;    /* 기본 톤 */
+      color: #fff;
+      font-size: 18px;
+      opacity: .45;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: background .12s ease, opacity .12s ease, transform .08s ease;
+    }
+    .aiSend:active{ transform: scale(0.98); }
+    .aiSend:enabled{ opacity: 1; }
+    .aiSend.isActive:enabled{ background: #2563eb; } /* 입력 시 파란 톤 */
+    .aiSend:disabled{ cursor:not-allowed; }
+    .aiSend:enabled{ opacity: 1; }
+    .aiSend:disabled{ cursor:not-allowed; }
+    .aiIconWrap{
+      position: relative;
+      width: 54px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .tokBadge{
+      position:absolute;
+      right:4px;
+      bottom:2px;
+      font-size:10px;
+      font-weight:900;
+      padding:2px 6px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#1f2a7a;
+      border:1px solid #e5e7eb;
+      line-height:1;
+      pointer-events:none;
+      user-select:none;
+      opacity:.95;
+    }
+    .aiTokenHint{
+      font-size: 12px;
+      color: #6b7280;
+      padding: 8px 12px;
+      margin: 0;
+      background: #fff;
+    }
+
+
+
+    /* 답변 준비 상태 라인 (입력창 위, 최소 방해) */
+    .aiPrepLine{
+      display:none;
+      align-items:center;
+      gap:8px;
+      padding: 8px 12px;
+      margin: 0 0 2px;
+      color:#6b7280;
+      font-size: 12px;
+      line-height: 1.2;
+      user-select:none;
+    }
+    .aiPrepLine.show{ display:flex; }
+    .aiPrepDots{ display:inline-flex; align-items:center; gap:4px; }
+    .aiPrepDots span{
+      width:6px; height:6px; border-radius:50%;
+      background:#9ca3af;
+      display:inline-block;
+      animation: aiDotPulse 1.2s infinite ease-in-out;
+    }
+    .aiPrepDots span:nth-child(2){ animation-delay: .15s; }
+    .aiPrepDots span:nth-child(3){ animation-delay: .30s; }
+
+    /* 나타남/사라짐을 더 부드럽게 */
+    .aiPrepLine{
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity .14s ease, transform .14s ease;
+    }
+    .aiPrepLine.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .aiNote{
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    /* 로딩중(동적) 표시 */
+    .aiBubble.loading{
+      display: block;
+      margin-right: auto;
+      background: #f3f4f6;
+      color:#111827;
+      border-top-left-radius: 6px;
+      border: 1px solid transparent;
+    }
+    .aiDots{ display:inline-flex; align-items:center; gap:4px; margin-left:6px; }
+    .aiDots span{
+      width:6px; height:6px; border-radius:50%;
+      background:#6b7280;
+      display:inline-block;
+      animation: aiDotPulse 1.2s infinite ease-in-out;
+    }
+    .aiDots span:nth-child(2){ animation-delay: .15s; }
+    .aiDots span:nth-child(3){ animation-delay: .30s; }
+    @keyframes aiDotPulse{
+      0%, 80%, 100% { transform: translateY(0); opacity: .35; }
+      40% { transform: translateY(-3px); opacity: 1; }
+    }
+
+
+    /* 상단바: 로컬 서버 상태 아이콘 */
+    .topRight{ display:flex; gap:10px; align-items:center; }
+    #serverStatusBtn{ position:relative; }
+    #serverStatusBtn .connDot{
+      position:absolute;
+      top:7px; right:7px;
+      width:10px; height:10px;
+      border-radius:999px;
+      background:#ef4444;
+      border:2px solid #ffffff;
+      box-shadow: 0 0 0 1px var(--line);
+      pointer-events:none;
+    }
+    #serverStatusBtn.ok .connDot{ background:#22c55e; }
+    #serverStatusBtn.no .connDot{ background:#ef4444; }
+
+
+
+    /* ====== A안: AI Bottom Sheet (Resizable Panel) ====== */
+    .aiFab{
+  position: fixed;
+  right: 16px;
+  bottom: calc(84px + var(--kb, 0px));
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  z-index: 1200;
+
+  /* background */
+  background-color: #fff;
+
+  /* star-only icon */
+  background-image: url("./fab_star_only_transparent.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 70%;
+
+
+  /* allow gradient ring pseudo-element */
+  overflow: visible;
+}
+
+.aiFab::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  padding: 2.5px; /* ring thickness */
+  background: linear-gradient(135deg, #64d2ff 0%, #4f7cff 55%, #a855f7 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+.aiFab:hover{ transform: scale(1.04); }
+.aiFab:active{ transform: scale(0.97); }
+
+.aiFab:active{ transform: scale(0.98); }
+
+    .aiPanel{
+      position: fixed;
+      left: 50%;
+      bottom: 0px;
+      width: min(720px, 100vw);
+      background: #ffffff;
+      border-top-left-radius: 18px;
+      border-top-right-radius: 18px;
+      border: 1px solid var(--line);
+      box-shadow: 0 -14px 40px rgba(0,0,0,.18);
+      /* 키보드 미세 동행(영상처럼 더 자연스럽게): JS가 --aiShift(px)를 세팅 */
+      transform: translate(-50%, 110%) translateY(calc(-1 * var(--aiShift, 0px)));
+      transition: transform .24s ease;
+      z-index: 1199;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      /* 높이: JS가 --aiPanelVh(30~80)로 제어 */
+      height: calc(var(--aiPanelVh, 50) * var(--vh, 1vh));
+      }
+
+    /* (v5) aiDockSlot 제거: 입력창은 패널 내부에 고정 */
+    .aiDockSlot{ display:none !important; }
+.aiPanel.open{ transform: translate(-50%, 0%) translateY(calc(-1 * var(--aiShift, 0px))); }
+
+    .aiPanel.dragging{
+      transition: none !important;
+    }
+
+    /* 상단 중앙 그랩바 (항상 표시) */
+    .aiGrabber{
+      height: 35px;
+      position: relative;
+      padding-right: 0; /* 닫기 버튼은 absolute로 처리 */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor: ns-resize;
+      touch-action: none; /* 모바일 스크롤/줌 방지 */
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .aiGrabber::before{
+      content:"";
+      width: 42px;
+      height: 5px;
+      border-radius: 999px;
+      background: #d1d5db;
+      transition: transform .12s ease, background .12s ease, width .12s ease;
+    }
+    /* PC hover affordance만 강화(버튼 없음) */
+
+
+
+    .aiPanelActions{ display:flex; gap: 8px; align-items:center; }
+
+
+    
+    /* Preset auto-collapse wrapper (fade + slide) */
+    .aiPresetsWrap{
+      max-height: 72px;
+      overflow: hidden;
+      opacity: 1;
+      transform: translateY(0);
+      transition: max-height .22s ease, opacity .22s ease, transform .22s ease;
+      will-change: max-height, opacity, transform;
+    }
+    .aiPresetsWrap.collapsed{
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+    }
+
+.aiPresets{
+      display:flex;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      background: #ffffff;
+
+      scroll-snap-type: x mandatory;
+    }
+    .aiPresets::-webkit-scrollbar{ display:none; }
+    .aiChip{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      background: #f3f4f6;
+      color: #111827;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select:none;
+
+      scroll-snap-align: start;
+    }
+    .aiChip:active{ transform: scale(0.99); }
+    .aiChip .chipTok{
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color:#1f2a7a;
+      border: 1px solid #e5e7eb;
+      line-height: 1;
+    }
+
+    
+.aiBody{
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background:#ffffff;
+
+  /* unified padding so greeting actually moves */
+  padding: 36px 0 0; /* change this number to move AI_GREETING_TEXT */
+  gap: 0;
+}
+
+    .aiMsgs{
+      flex: 1;
+      min-height: 0;
+      overflow:auto;
+      padding: 12px;
+      background: #ffffff;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+    .aiPanelFooter{
+      display:flex;
+      justify-content:flex-end;
+      gap: 10px;
+    }
+
+    /* 리사이즈 중: 내부 스크롤/선택 충돌 최소화 */
+    body.aiResizing{
+      user-select:none;
+      -webkit-user-select:none;
+    }
+    body.aiResizing .aiMsgs{
+      pointer-events:none;
+    }
+
+
+    /* 기존 inline aiBox 스타일 영향 최소화 */
+    .aiBox{ margin-top: 0; box-shadow: none; }
+
+/* ===========================
+   AI Panel Design Patch (v1)
+   - Input height 48px
+   - Preset chips gradient outline
+   - No boxes for greeting/answers
+   - Keep only header/body/footer dividers
+   - Close button top-right, no box
+   =========================== */
+:root{
+  --aiGradA:#8b5cf6; /* purple */
+  --aiGradB:#3b82f6; /* blue */
+}
+
+/* Input/composer sizing */
+.aiComposer{
+  grid-template-columns: 1fr 48px !important;
+  gap: 10px !important;
+}
+.aiPrompt{
+  height: 48px !important;
+  line-height: 24px !important;
+  padding: 10px 14px !important;
+  border-radius: 14px !important;
+}
+.aiSend{
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 14px !important;
+  font-size: 18px !important;
+}
+
+/* Preset chips: gradient outline (no fill) */
+.aiChip{
+  background: transparent !important;
+  border: 1.5px solid transparent !important;
+  color: #111827 !important;
+
+  background-image:
+    linear-gradient(#ffffff, #ffffff),
+    linear-gradient(90deg, var(--aiGradA), var(--aiGradB)) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+}
+.aiChip:active{
+  transform: scale(0.98) !important;
+  background-image:
+    linear-gradient(rgba(139,92,246,.06), rgba(59,130,246,.06)),
+    linear-gradient(90deg, var(--aiGradA), var(--aiGradB)) !important;
+}
+
+/* Messages: remove bubble boxes for greeting & future answers (AI only) */
+.aiBubble.ai{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 10px 0 !important;
+  max-width: 100% !important;
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+}
+
+/* ✅ User messages: boxed to distinguish from AI */
+.aiBubble.user{
+  display: inline-block !important;
+  margin-left: auto !important;
+  max-width: 92% !important;
+  padding: 10px 12px !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--line) !important;
+  background: #111827 !important;
+  color: #ffffff !important;
+  border-top-right-radius: 6px !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06) !important;
+}
+
+
+/* Keep status/loading as subtle system lines */
+.aiBubble.status,
+.aiBubble.loading{
+  border-radius: 12px !important;
+  padding: 10px 12px !important;
+}
+
+/* Keep only header/body/footer dividers (no inner card look) */
+.aiPanel{ box-shadow:none !important; }
+.aiPanelHead{ position: relative !important; }
+.aiPanelActions{
+  position:absolute !important;
+  right: 10px !important;
+  top: 8px !important;
+}
+
+/* Close button: top-right, no box */
+.aiPanelIconBtn{
+  background: transparent !important;
+  border: 0 !important;
+  padding: 6px !important;
+  border-radius: 999px !important;
+  opacity: .75 !important;
+  cursor: pointer !important;
+}
+.aiPanelIconBtn:active{ opacity: 1 !important; }
+.aiPanelIconBtn:hover{ opacity: 1 !important; }
+
+/* 닫기 버튼을 그랩바 우측에 배치 */
+.aiGrabber .aiPanelIconBtn{
+  position:absolute !important;
+  right: 10px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+.aiGrabber .aiResetBtn{
+  right: 44px !important; /* 닫기(✕) 왼쪽 */
+}
+.aiGrabber .aiPanelIconBtn:active{
+  transform: translateY(-50%) scale(0.96) !important;
+}
+
+/* Message container: remove border/radius if any earlier rule exists */
+.aiMsgs{
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  padding: 16px 14px !important;
+}
+
+/* Presets row and footer divider only */
+.aiPresets{ border-bottom: 1px solid var(--line) !important; }
+.aiPanelHead{ border-bottom: 1px solid var(--line) !important; }
+
+
+
+/* ====== AI assistant star prefix (FAB icon via SVG <image>) ====== */
+.aiBubble.ai{
+  display: flex !important;
+  align-items: flex-start;
+}
+.aiStarIcon{
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  flex: 0 0 auto;
+  transform: translateY(2px);
+}
+.aiBubble.ai .aiText{
+  white-space: pre-wrap;
+  line-height: 1.65;
+}
+/* =============================================================== */
+
+</style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card" id="card">
+      <div class="swipeLayer" id="swipeLayer">
+        <!-- 홈 화면 -->
+        <div id="homeSection">
+          <div class="topHome">
+            <div class="pill gray">기출문제 퀴즈</div>
+            <button class="btn secondary" id="goLastBtn" style="display:none;">최근 과목 이어하기</button>
+          </div>
+
+          <h1 class="homeTitle">오늘 풀 문제를 선택하세요</h1>
+          <p class="homeSub">
+            과목을 추가해도 UX가 깨지지 않도록, 과목별로 진행률/점수를 따로 저장합니다.<br>
+            • 과목 카드 → 시작/이어하기 • 완료 후 오답복습
+          </p>
+
+          <div class="subjectGrid" id="subjectsList"></div>
+
+          <div class="banner" id="homeBanner"></div>
+        </div>
+
+        <!-- 퀴즈 화면 -->
+        <div id="quizSection" style="display:none;">
+        <div class="top">
+          <div id="progress" class="pill">1/1</div>
+          <div class="topRight">
+            <div id="timerPill" class="pill gray timerPill" aria-label="문제 타이머">00:30</div>
+
+            <button class="iconBtn no" id="serverStatusBtn" aria-label="로컬 서버 미연결" title="로컬 서버 미연결" type="button">
+              <span class="connDot" id="connDot" aria-hidden="true"></span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M4 7C4 5.895 4.895 5 6 5H18C19.105 5 20 5.895 20 7V9C20 10.105 19.105 11 18 11H6C4.895 11 4 10.105 4 9V7Z"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 15C4 13.895 4.895 13 6 13H18C19.105 13 20 13.895 20 15V17C20 18.105 19.105 19 18 19H6C4.895 19 4 18.105 4 17V15Z"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 8H8.01M8 16H8.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </button>
+
+<button class="iconBtn" id="homeBtn" aria-label="홈으로 이동" type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 10.5L12 3L21 10.5V20A1 1 0 0 1 20 21H14V14H10V21H4A1 1 0 0 1 3 20V10.5Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"/>
+          </svg>
+        </button>
+          </div>
+        </div>
+
+        <h1 id="qText"></h1>
+        <div id="choices"></div>
+
+        <div class="nav" id="navBar">
+          <button class="iconBtn" id="prevBtn" aria-label="이전">&lt;</button>
+          <button class="iconBtn" id="nextBtn" aria-label="다음">&gt;</button>
+        </div>
+
+        <!-- 완료 화면에서만 버튼들이 들어감 -->
+        <div class="row" id="actionRow" style="display:none;"></div>
+
+        <div class="banner" id="banner"></div>
+
+        <div class="result" id="result"></div>
+        <div class="explain" id="explain"></div>
+
+        <!-- AI Q&A (로컬 서버) : Bottom Sheet 코치 패널 (A안) -->
+        <!-- Floating AI 버튼 -->
+        <button class="aiFab" id="aiFab" type="button" aria-label="AI 코치 열기" title="AI 코치"></button>
+
+        <!-- Bottom Sheet Panel -->
+        <div class="aiPanel" id="aiBox" aria-label="AI 코치 패널" style="display:none;">
+          <!-- 상단 중앙 그랩바 + 닫기 버튼(우측) -->
+          <div class="aiGrabber" id="aiGrabber" aria-label="패널 크기 조절" title="드래그하여 크기 조절">
+            <button class="aiPanelIconBtn aiResetBtn" id="aiResetBtn" type="button" aria-label="이 문제 대화 초기화" title="이 문제 대화 초기화">↻</button>
+            <button class="aiPanelIconBtn" id="aiCloseBtn" type="button" aria-label="닫기" title="닫기">✕</button>
+          </div>
+
+
+          <div class="aiBody show" id="aiBody">
+            <div class="aiMsgs" id="aiMsgs"></div>
+
+
+            
+
+            
+
+            <!-- preset 질문 칩 (1줄 가로 스크롤) -->
+          <div class="aiPresetsWrap" id="aiPresetsWrap">
+          <div class="aiPresets" id="aiPresets">
+                      <button class="aiChip" data-preset="summary" type="button">핵심요약 <span class="chipTok">≈0</span></button>
+                      <button class="aiChip" data-preset="whyWrong" type="button">왜 틀렸나? <span class="chipTok">≈0</span></button>
+                      <button class="aiChip" data-preset="trap" type="button">함정포인트 <span class="chipTok">≈0</span></button>
+                      <button class="aiChip" data-preset="exam" type="button">시험에 나오면 <span class="chipTok">≈0</span></button>
+                    </div>
+        </div>
+
+<!-- ChatGPT 스타일 입력 (하단 고정) -->
+            
+            <!-- 답변 준비 상태 라인(지연 시에만 노출) -->
+            <div class="aiPrepLine" id="aiPrepLine" aria-live="polite">
+              답변을 준비하고 있어요
+              <span class="aiPrepDots" aria-hidden="true"><span></span><span></span><span></span></span>
+            </div>
+            <div class="aiComposer" id="aiComposer">
+              <textarea class="aiPrompt" id="aiPrompt" name="ai_prompt" rows="1" inputmode="text" enterkeyhint="send" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" data-form-type="other" data-lpignore="true" placeholder="ai에게 물어보세요"></textarea>
+              <button class="aiSend" id="aiSendBtn" type="button" disabled aria-label="send">➤</button>
+            </div>
+              <div class="aiTokenHint" id="aiTokenHint">예상 토큰: 질문 <b>0</b></div>
+          </div>
+        </div>
+
+        <!-- ✅ 키보드 슬롯 도크 (입력/전송창 전용) -->
+        <div class="aiDockSlot" id="aiDockSlot" style="display:none;"></div>
+
+
+        <div class="hint" id="hintBox">
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="./bank_civil.js"></script>
+
+  <script>
+    // ====== 문제 은행 / 과목(확장형) ======
+    // ✅ 과목을 추가하려면 아래 SUBJECTS에 {"id","name","desc","questions"}만 추가하면 됩니다.
+        // ✅ BANK_CIVIL은 외부 파일(bank_civil.js)에서 로드됩니다.
+
+
+
+    // ====== 해설 정답 라인 하이라이트 ======
+    const CIRCLED = ["①","②","③","④","⑤"];
+
+    function escapeHtml(s){
+      return (s ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",
+        '"':"&quot;","'":"&#039;"
+      }[m]));
+    }
+
+    function formatExplanationWithHighlight(explText, answerIndex){
+      const target = CIRCLED[answerIndex];
+      if (!target) return escapeHtml(explText ?? "");
+
+      const lines = String(explText ?? "").split("\n");
+      let done = false;
+
+      return lines.map(line => {
+        const trimmed = line.trimStart();
+        if (!done && trimmed.startsWith(target)) {
+          done = true;
+          return `<span class="exCorrectLine">${escapeHtml(line)}</span>`;
+        }
+        return escapeHtml(line);
+      }).join("\n");
+    }
+
+
+
+    const SUBJECTS = [
+      {
+        id: "civil",
+        name: "민법",
+        desc: "세무사시험 대비 · 기출문제",
+        questions: BANK_CIVIL
+      },
+
+            {
+        id: "accounting",
+        name: "회계학",
+        desc: "세무사시험 대비 · 기출문제",
+        questions: BANK_CIVIL
+      },
+
+            {
+        id: "tax",
+        name: "세법",
+        desc: "세무사시험 대비 · 기출문제",
+        questions: BANK_CIVIL
+      },
+
+               {
+        id: "economy",
+        name: "재정학",
+        desc: "세무사시험 대비 · 기출문제",
+        questions: BANK_CIVIL
+      },
+      // 예) {
+      //   id: "brokerage",
+      //   name: "부동산학개론",
+      //   desc: "과목 추가 예정",
+      //   questions: [ ... ]
+      // },
+    ];
+
+    // 현재 과목 컨텍스트(렌더 시점에 설정)
+    let questions = [];
+    let qById = new Map();
+    let allIds = [];
+
+    // ====== 상태(로컬 저장) : 과목별 저장 + 홈 화면 ======
+    const APP_STORAGE_KEY = "quiz_hub_state_v1";
+
+    const makeDefaultQuizState = () => ({
+      idx: 0,
+      view: "main",      // "main" | "wrongReview"
+      order: [],         // 과목별 문제 id 순서
+      answered: {},      // { [id]: { selected, isCorrect, at } }
+      reviewed: {},      // 오답복습에서 이번 세션 선택 여부
+
+      wrongOrder: [],
+      wrongRound: 0
+    });
+
+    const makeDefaultAppState = () => ({
+      screen: "home",              // "home" | "quiz"
+      currentSubjectId: "civil",
+      perSubject: {}               // { [subjectId]: quizState }
+    });
+
+    function loadAppState() {
+      try {
+        const raw = localStorage.getItem(APP_STORAGE_KEY);
+        if (!raw) return makeDefaultAppState();
+        const parsed = JSON.parse(raw);
+        const base = makeDefaultAppState();
+        const merged = { ...base, ...parsed };
+        if (!merged.perSubject || typeof merged.perSubject !== "object") merged.perSubject = {};
+        if (merged.screen !== "home" && merged.screen !== "quiz") merged.screen = "home";
+        return merged;
+      } catch {
+        return makeDefaultAppState();
+      }
+    }
+
+    function saveAppState() {
+      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(app));
+    }
+
+    let app = loadAppState();
+    let state = null; // ✅ 현재 과목의 퀴즈 상태(렌더 시점에 바인딩)
+
+    // ====== DOM ======
+    const card = document.getElementById("card");
+    const swipeLayer = document.getElementById("swipeLayer");
+    const qText = document.getElementById("qText");
+    const choicesEl = document.getElementById("choices");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const navBar = document.getElementById("navBar");
+    const actionRow = document.getElementById("actionRow");
+    const resultEl = document.getElementById("result");
+    const explainEl = document.getElementById("explain");
+    const progressEl = document.getElementById("progress");
+    const scoreEl = document.getElementById("score");
+    const wrongCountEl = document.getElementById("wrongCount");
+    const bannerEl = document.getElementById("banner");
+    const hintBox = document.getElementById("hintBox");
+    const homeBtn = document.getElementById("homeBtn");
+
+    const timerPill = document.getElementById("timerPill");
+
+    // ====== 문제 타이머(문제당 30초, 시간초과 액션 없음) ======
+    const QUESTION_TIME_SEC = 30;
+    let timerInterval = null;
+    let timerRemaining = QUESTION_TIME_SEC;
+    let timerForQid = null;
+
+    function fmtTime(sec){
+      const s = Math.max(0, Math.floor(sec));
+      const mm = String(Math.floor(s / 60)).padStart(2, "0");
+      const ss = String(s % 60).padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function updateTimerUI(){
+      if (!timerPill) return;
+      timerPill.textContent = fmtTime(timerRemaining);
+      if (timerRemaining <= 10) timerPill.classList.add("warn");
+      else timerPill.classList.remove("warn");
+    }
+
+    function stopTimer(){
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = null;
+      timerForQid = null;
+    }
+
+    function startTimerForQuestion(qid){
+      if (!timerPill) return;
+      // 같은 문제면 재시작하지 않음
+      if (timerForQid === qid) return;
+
+      timerForQid = qid;
+      timerRemaining = QUESTION_TIME_SEC;
+      updateTimerUI();
+
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        // 홈으로 갔거나 화면이 바뀌면 종료
+        if (app.screen !== "quiz") { stopTimer(); return; }
+
+        if (timerRemaining <= 0){
+          timerRemaining = 0;
+          updateTimerUI();
+          clearInterval(timerInterval);
+          timerInterval = null;
+          return;
+        }
+        timerRemaining -= 1;
+        updateTimerUI();
+      }, 1000);
+    }
+
+
+    // ====== 홈 DOM ======
+    const homeSection = document.getElementById("homeSection");
+    const quizSection = document.getElementById("quizSection");
+    const subjectsList = document.getElementById("subjectsList");
+    const homeBannerEl = document.getElementById("homeBanner");
+    const goLastBtn = document.getElementById("goLastBtn");
+
+    function getSubjectById(id) {
+      return SUBJECTS.find(s => s.id === id);
+    }
+
+    function bindSubjectContext(subjectId) {
+      const subj = getSubjectById(subjectId) || SUBJECTS[0];
+      app.currentSubjectId = subj.id;
+
+      // 문제 컨텍스트
+      questions = subj.questions || [];
+      qById = new Map(questions.map(q => [q.id, q]));
+      allIds = questions.map(q => q.id);
+
+      // 과목별 state 보장
+      if (!app.perSubject[subj.id]) {
+        const qs = makeDefaultQuizState();
+        qs.order = [...allIds];
+        app.perSubject[subj.id] = qs;
+      } else {
+        // order/ids 유효성 보정
+        const qs = app.perSubject[subj.id];
+        if (!Array.isArray(qs.order)) qs.order = [...allIds];
+        const inOrder = qs.order.filter(id => qById.has(id));
+        const set = new Set(inOrder);
+        for (const id of allIds) if (!set.has(id)) inOrder.push(id);
+        qs.order = inOrder;
+      }
+
+      state = app.perSubject[subj.id];
+      saveAppState();
+    }
+
+    function showHomeBanner(msg) {
+      homeBannerEl.textContent = msg;
+      homeBannerEl.classList.add("show");
+    }
+    function hideHomeBanner() {
+      homeBannerEl.textContent = "";
+      homeBannerEl.classList.remove("show");
+    }
+
+    function fmtPercentForSubject(subjectId) {
+      const qs = app.perSubject[subjectId];
+      const subj = getSubjectById(subjectId);
+      if (!qs || !subj) return null;
+      const total = (subj.questions || []).length;
+      if (total <= 0) return null;
+
+      let correct = 0;
+      let answered = 0;
+      for (const q of subj.questions) {
+        const a = qs.answered?.[q.id];
+        if (!a) continue;
+        answered += 1;
+        if (a.isCorrect) correct += 1;
+      }
+      if (answered === 0) return null;
+      return Math.round((correct / total) * 100);
+    }
+
+    function countAnswered(subjectId) {
+      const qs = app.perSubject[subjectId];
+      const subj = getSubjectById(subjectId);
+      if (!qs || !subj) return { answered: 0, total: 0, correct: 0, wrong: 0 };
+
+      const total = (subj.questions || []).length;
+      let correct = 0, wrong = 0, answered = 0;
+      for (const q of subj.questions) {
+        const a = qs.answered?.[q.id];
+        if (!a) continue;
+        answered += 1;
+        if (a.isCorrect) correct += 1;
+        else wrong += 1;
+      }
+      return { answered, total, correct, wrong };
+    }
+
+    function setScreen(next) {
+      app.screen = next;
+      saveAppState();
+    }
+
+    function renderHome() {
+      stopTimer();
+      if (timerPill) { timerPill.style.display = 'none'; timerPill.classList.remove('warn'); }
+      homeSection.style.display = "block";
+      quizSection.style.display = "none";
+      hideBanner(); // quiz banner
+      hideHomeBanner();
+
+      // 최근 과목 이어하기 버튼
+      const cur = app.currentSubjectId;
+      const stats = countAnswered(cur);
+      if (stats.answered > 0 && stats.answered < stats.total) {
+        goLastBtn.style.display = "inline-flex";
+        goLastBtn.textContent = `최근 과목 이어하기 · ${getSubjectById(cur)?.name || cur}`;
+        goLastBtn.onclick = () => {
+          bindSubjectContext(cur);
+          setScreen("quiz");
+          applyLaunchShuffleOnce();
+          render();
+        };
+      } else {
+        goLastBtn.style.display = "none";
+      }
+
+      subjectsList.innerHTML = "";
+      SUBJECTS.forEach(subj => {
+        // 과목별 state가 없으면 생성(홈에서 바로 눌러도 됨)
+        if (!app.perSubject[subj.id]) {
+          const qs = makeDefaultQuizState();
+          qs.order = (subj.questions || []).map(q => q.id);
+          app.perSubject[subj.id] = qs;
+        }
+
+        const s = countAnswered(subj.id);
+        const percent = fmtPercentForSubject(subj.id);
+
+        const cardEl = document.createElement("div");
+        cardEl.className = "subjectCard";
+        cardEl.onclick = () => {
+          bindSubjectContext(subj.id);
+          setScreen("quiz");
+          applyLaunchShuffleOnce();
+          render();
+        };
+
+        const head = document.createElement("div");
+        head.className = "subjectHead";
+
+        const left = document.createElement("div");
+        left.style.flex = "1";
+
+        const name = document.createElement("p");
+        name.className = "subjectName";
+        name.textContent = subj.name;
+
+        const desc = document.createElement("p");
+        desc.className = "subjectDesc";
+        desc.textContent = subj.desc || "";
+
+        left.appendChild(name);
+        left.appendChild(desc);
+
+        const meta = document.createElement("div");
+        meta.className = "subjectMeta";
+
+        const chip1 = document.createElement("span");
+        chip1.className = "chip";
+        chip1.textContent = `진행 ${s.answered}/${s.total}`;
+
+        const chip2 = document.createElement("span");
+        chip2.className = "chip gray";
+        chip2.textContent = (percent === null) ? "점수 -점" : `점수 ${percent}점`;
+
+        meta.appendChild(chip1);
+        meta.appendChild(chip2);
+
+        head.appendChild(left);
+        head.appendChild(meta);
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+        const fill = document.createElement("div");
+        const p = (s.total > 0) ? Math.round((s.answered / s.total) * 100) : 0;
+        fill.style.width = `${p}%`;
+        bar.appendChild(fill);
+
+        const actions = document.createElement("div");
+        actions.className = "subjectActions";
+
+        const startBtn = document.createElement("button");
+        startBtn.className = "btn homeBtn";
+        startBtn.textContent = (s.answered > 0 && s.answered < s.total) ? "이어하기" : "시작하기";
+        startBtn.onclick = (e) => {
+          e.stopPropagation();
+          bindSubjectContext(subj.id);
+          setScreen("quiz");
+          applyLaunchShuffleOnce();
+          render();
+        };
+
+        const resetBtn = document.createElement("button");
+        resetBtn.className = "btn secondary homeBtn";
+        resetBtn.textContent = "진행 초기화";
+        resetBtn.onclick = (e) => {
+          e.stopPropagation();
+          const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
+          if (!ok) return;
+          // 과목별 초기화
+          const qs = makeDefaultQuizState();
+          qs.order = (subj.questions || []).map(q => q.id);
+          app.perSubject[subj.id] = qs;
+          saveAppState();
+          showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
+          renderHome();
+        };
+
+        actions.appendChild(startBtn);
+        actions.appendChild(resetBtn);
+
+        cardEl.appendChild(head);
+        cardEl.appendChild(bar);
+        cardEl.appendChild(actions);
+
+        subjectsList.appendChild(cardEl);
+      });
+
+      saveAppState();
+    }
+
+    let selected = null;
+    let locked = false;
+
+    if (homeBtn) {
+      homeBtn.onclick = () => {
+        pendingFinish = false;
+        stopTimer();
+        setScreen("home");
+        render();
+      };
+    }
+
+    // 마지막 문제 오답 시: '>'/왼쪽 스와이프로만 완료로 이동시키는 플래그
+    let pendingFinish = false;
+
+    // ====== 유틸 ======
+    function computeCounts() {
+      let correct = 0;
+      let wrong = 0;
+      for (const id of allIds) {
+        const a = state.answered[id];
+        if (!a) continue;
+        if (a.isCorrect) correct += 1;
+        else wrong += 1;
+      }
+      return { correct, wrong };
+    }
+
+    function isAllAnswered() {
+      for (const id of allIds) {
+        if (!state.answered[id]) return false;
+      }
+      return true;
+    }
+
+    function getWrongIdsFromAnswered() {
+      const wrong = [];
+      for (const [idStr, a] of Object.entries(state.answered)) {
+        const id = Number(idStr);
+        if (a && a.isCorrect === false && qById.has(id)) wrong.push(id);
+      }
+      return wrong;
+    }
+
+    function fisherYatesShuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function showBanner(msg) {
+      bannerEl.textContent = msg;
+      bannerEl.classList.add("show");
+    }
+    function hideBanner() {
+      bannerEl.textContent = "";
+      bannerEl.classList.remove("show");
+    }
+
+    function getViewOrder() {
+      if (state.view === "wrongReview") {
+        // ✅ 3안: 라운드 고정 순서 사용
+        if (Array.isArray(state.wrongOrder) && state.wrongOrder.length > 0) return state.wrongOrder;
+
+        // 혹시 상태 꼬였으면 fallback으로 구성
+        const fallback = fisherYatesShuffle(getWrongIdsFromAnswered());
+        state.wrongOrder = fallback;
+        state.wrongRound = state.wrongRound || 1;
+        saveAppState();
+        return state.wrongOrder;
+      }
+      return state.order;
+    }
+
+    function clampIdx() {
+      const view = getViewOrder();
+      if (view.length === 0) state.idx = 0;
+      else state.idx = Math.max(0, Math.min(state.idx, view.length - 1));
+    }
+
+    // ✅ 현재 문제를 이미 선택(채점)했는지 체크
+    function hasAnsweredCurrent() {
+      const view = getViewOrder();
+      const currentId = view[state.idx];
+      if (state.view === "wrongReview") {
+        return !!state.reviewed[currentId];
+      }
+      return !!state.answered[currentId];
+    }
+
+    // 앱 실행 시 자동 셔플(이미 푼 문제는 셔플 제외)
+    const SHUFFLE_ONCE_KEY_PREFIX = "quiz_shuffle_once_v1_";
+
+    function applyLaunchShuffleOnce() {
+      try {
+        const key = SHUFFLE_ONCE_KEY_PREFIX + app.currentSubjectId;
+        if (sessionStorage.getItem(key) === "1") return;
+
+        const answeredSet = new Set(Object.keys(state.answered || {}).map(Number));
+        const answeredInOrder = state.order.filter(id => answeredSet.has(id));
+        const unanswered = state.order.filter(id => !answeredSet.has(id));
+
+        const shuffledUnanswered = fisherYatesShuffle(unanswered);
+        state.order = [...answeredInOrder, ...shuffledUnanswered];
+
+        if (state.view === "main") state.idx = 0;
+
+        saveAppState();
+        sessionStorage.setItem(key, "1");
+      } catch {
+        // ignore
+      }
+    }
+
+    // ====== 스와이프 애니메이션 ======
+    function animateSwap(direction /* "left" | "right" */) {
+      return new Promise((resolve) => {
+        swipeLayer.classList.remove("swipeOutLeft", "swipeOutRight");
+        void swipeLayer.offsetWidth;
+        swipeLayer.classList.add(direction === "left" ? "swipeOutLeft" : "swipeOutRight");
+        setTimeout(() => {
+          swipeLayer.classList.remove("swipeOutLeft", "swipeOutRight");
+          swipeLayer.classList.add("swipeIn");
+          setTimeout(() => {
+            swipeLayer.classList.remove("swipeIn");
+            resolve();
+          }, 30);
+        }, 160);
+      });
+    }
+
+    // 오답 풀이 화면에서는 "이전에 고른 답 표시하지 않기"
+    function shouldHidePreviousSelectionInWrongReview() {
+      // 오답복습에서는 "이번 세션에서 한 번이라도 선택한 문제"만 복원(이전 시도 답안은 숨김)
+      if (state.view !== "wrongReview") return false;
+      const view = getViewOrder();
+      const currentId = view[state.idx];
+      return !state.reviewed[currentId];
+    }
+
+    // ====== 완료 화면 렌더 ======
+    function renderDoneScreen() {
+      stopTimer();
+      if (timerPill) { timerPill.style.display = 'none'; timerPill.classList.remove('warn'); }
+      const counts = computeCounts();
+      const total = allIds.length;
+      const percent = Math.round((counts.correct / total) * 100);
+      progressEl.textContent = `${allIds.length}/${allIds.length}`;
+      if (scoreEl) scoreEl.textContent = `정답 ${counts.correct}`;
+      if (wrongCountEl) wrongCountEl.textContent = `오답 ${counts.wrong}`;
+
+      hideBanner();
+      pendingFinish = false;
+
+      // ✅ 오답복습 라운드 상태 초기화
+      state.wrongOrder = [];
+      state.wrongRound = 0;
+      state.reviewed = {};
+      saveAppState();
+
+      qText.textContent = "모든 문제를 다 풀었습니다 ✅";
+      choicesEl.innerHTML = `
+        <div class="doneBox">
+          <p class="doneTitle">결과</p>
+          <p class="doneMeta">총 ${allIds.length}문제 기준</p>
+          <div class="kv">
+            <div class="scoreBig">${percent}점</div>
+            <span class="pill">정답 ${counts.correct}</span>
+            <span class="pill gray">오답 ${counts.wrong}</span>
+          </div>
+        </div>
+      `;
+
+      navBar.style.display = "none";
+      resultEl.textContent = "";
+      resultEl.className = "result";
+      explainEl.textContent = "";
+      explainEl.className = "explain";
+      hintBox.style.display = "none";
+
+      actionRow.style.display = "flex";
+      actionRow.innerHTML = "";
+
+      const btnHome = document.createElement("button");
+      btnHome.className = "btn secondary small";
+      btnHome.textContent = "홈으로";
+      btnHome.onclick = () => { pendingFinish = false; setScreen("home"); render(); };
+      actionRow.appendChild(btnHome);
+
+      const btnReset = document.createElement("button");
+      btnReset.className = "btn secondary small";
+      btnReset.textContent = "처음부터 다시 풀기";
+      btnReset.onclick = onClickReset;
+      actionRow.appendChild(btnReset);
+
+      const wrongCount = counts.wrong;
+      if (wrongCount > 0) {
+        const btnWrong = document.createElement("button");
+        btnWrong.className = "btn tertiary small";
+        btnWrong.textContent = "오답만 풀기";
+        btnWrong.onclick = startWrongReview;
+        actionRow.appendChild(btnWrong);
+      }
+    }
+
+    // ====== 3안: 오답 라운드 종료 처리 ======
+    function finishWrongRound() {
+      // 이번 라운드에서 틀린 문제만 모으기(여전히 isCorrect=false인 것)
+      const remainingWrong = (state.wrongOrder || []).filter(id => {
+        const a = state.answered[id];
+        return a && a.isCorrect === false;
+      });
+
+      if (remainingWrong.length === 0) {
+        // ✅ 오답 0개면 메인 완료 화면으로
+        state.view = "main";
+        state.idx = Math.max(0, state.order.length - 1); // 마지막으로 보내면 render()가 완료 화면 조건 충족
+        pendingFinish = false;
+        state.wrongOrder = [];
+        state.wrongRound = 0;
+      state.reviewed = {};
+        saveAppState();
+        render();
+        return;
+      }
+
+      // ✅ 남은 오답만 다시 셔플해서 다음 라운드
+      state.wrongRound = (state.wrongRound || 1) + 1;
+      state.wrongOrder = fisherYatesShuffle(remainingWrong);
+      state.idx = 0;
+      state.reviewed = {};
+      saveAppState();
+
+      showBanner(`오답 복습 ${state.wrongRound - 1}회차 완료! 틀린 문제 ${remainingWrong.length}개를 다시 섞어서 한 번 더 풀어요.`);
+      render();
+    }
+
+    // ====== 렌더 ======
+    function render() {
+      // 홈/퀴즈 화면 전환
+      if (app.screen === "home") {
+        renderHome();
+        return;
+      }
+
+      // 퀴즈 화면 준비
+      homeSection.style.display = "none";
+      quizSection.style.display = "block";
+      bindSubjectContext(app.currentSubjectId);
+
+      if (timerPill) { timerPill.style.display = ''; }
+
+      const counts = computeCounts();
+      const total = allIds.length;
+      const percent = Math.round((counts.correct / total) * 100);
+      if (scoreEl) scoreEl.textContent = `정답 ${counts.correct}`;
+      if (wrongCountEl) wrongCountEl.textContent = `오답 ${counts.wrong}`;
+
+      const viewOrder = getViewOrder();
+      clampIdx();
+      saveAppState();
+
+      const isLast = (state.idx === Math.max(0, viewOrder.length - 1));
+
+      // 메인 뷰에서 전부 다 풀었으면 완료 화면
+      // 단, 마지막 오답 대기(pendingFinish=true)면 완료로 자동진입 금지
+      if (state.view === "main" && isAllAnswered()) {
+        if (isLast && !pendingFinish) {
+          renderDoneScreen();
+          return;
+        }
+      }
+
+      // 오답복습인데(3안) viewOrder가 0이면 -> 바로 종료 처리
+      if (state.view === "wrongReview" && viewOrder.length === 0) {
+        finishWrongRound();
+        return;
+      }
+
+      // 일반 화면
+      navBar.style.display = "flex";
+      hintBox.style.display = "block";
+
+
+      // 🔴 오답복습 종료 버튼을 하단 네비게이션 우측(빨간 박스 위치)에 배치
+      let exitWrongNavBtn = document.getElementById("exitWrongNavBtn");
+      if (state.view === "wrongReview") {
+        // navBar에 absolute 배치를 위해 상대 위치 설정(오답복습일 때만)
+        navBar.style.position = "relative";
+        navBar.style.paddingRight = "140px"; // 우측 버튼 공간 확보
+
+        if (!exitWrongNavBtn) {
+          exitWrongNavBtn = document.createElement("button");
+          exitWrongNavBtn.id = "exitWrongNavBtn";
+          exitWrongNavBtn.className = "btn secondary";
+          exitWrongNavBtn.textContent = "오답복습 종료";
+
+          exitWrongNavBtn.style.height = "42px";
+          exitWrongNavBtn.style.padding = "0 14px";
+          exitWrongNavBtn.style.fontSize = "13px";
+          exitWrongNavBtn.style.borderRadius = "12px";
+
+          // 빨간 박스 위치(네비 바 우측 끝)에 고정
+          exitWrongNavBtn.style.position = "absolute";
+          exitWrongNavBtn.style.right = "0";
+          exitWrongNavBtn.style.top = "50%";
+          exitWrongNavBtn.style.transform = "translateY(-50%)";
+
+          exitWrongNavBtn.onclick = exitWrongReview;
+
+          navBar.appendChild(exitWrongNavBtn);
+        }
+      } else {
+        if (exitWrongNavBtn) exitWrongNavBtn.remove();
+        // 다른 화면에는 영향 없도록 원복
+        navBar.style.position = "";
+        navBar.style.paddingRight = "";
+      }
+
+
+      actionRow.innerHTML = "";
+      actionRow.style.display = "none";
+
+
+// ✅ pendingFinish 배너는 "메인 뷰 + 마지막 문제 화면"에서만 유지
+      if (!(state.view === "main" && pendingFinish && isLast)) {
+        // wrongReview 라운드 안내 배너는 render()에서 유지되도록, 여기서는 무조건 숨기지 않음
+        // 단, 선택 강제 배너/마지막오답 배너가 아닐 때는 숨겨도 됨
+        // => 라운드 완료 배너는 render() 진입 직후 showBanner 호출이라 유지됨.
+      }
+
+      const currentId = viewOrder[state.idx];
+      const q = qById.get(currentId);
+      // 타이머 시작(문제 진입 시 30초)
+      startTimerForQuestion(currentId);
+
+      // ✅ 진행 표시: wrongReview면 라운드도 함께 표시
+      if (state.view === "wrongReview") {
+        const r = state.wrongRound || 1;
+        progressEl.textContent = `${state.idx + 1}/${viewOrder.length} (오답복습 ${r}회차)`;
+      } else {
+        progressEl.textContent = `${state.idx + 1}/${viewOrder.length}`;
+      }
+
+      prevBtn.disabled = (state.idx === 0);
+
+      // ✅ 다음 버튼 disabled 정책
+      // - 메인: 마지막이면 비활성(단, pendingFinish는 활성)
+      // - 메인: 보기 선택 안 했으면 비활성
+      // - 오답복습: 보기 선택 안 했으면 비활성 (마지막에서도 라운드 종료 버튼으로 쓰이므로 isLast로 막지 않음)
+      if (state.view === "wrongReview") {
+        nextBtn.disabled = !hasAnsweredCurrent(); // 라운드 마지막이어도 눌러서 라운드 종료 가능
+      } else {
+        if (state.view === "main" && pendingFinish && isLast) nextBtn.disabled = false;
+        else nextBtn.disabled = isLast || !hasAnsweredCurrent();
+      }
+
+      qText.textContent = q.question;
+      choicesEl.innerHTML = "";
+
+      selected = null;
+      locked = false;
+
+      resultEl.textContent = "";
+      resultEl.className = "result";
+      explainEl.textContent = "";
+      explainEl.className = "explain";
+
+      // choices (선택 즉시 채점)
+      q.choices.forEach((c, i) => {
+        const btn = document.createElement("button");
+        btn.className = "choice";
+        btn.textContent = `${i + 1}. ${c}`;
+        btn.onclick = () => {
+          if (locked) return;
+          selected = i;
+          [...choicesEl.children].forEach(x => x.classList.remove("selected"));
+          btn.classList.add("selected");
+          gradeImmediate();
+        };
+        choicesEl.appendChild(btn);
+      });
+
+      // 메인 화면에서는 풀었던 문제 복원 / 오답 풀이에서는 복원하지 않음
+      const prevAnswer = state.answered[q.id];
+      if (prevAnswer && !shouldHidePreviousSelectionInWrongReview()) {
+        locked = true;
+        selected = prevAnswer.selected;
+        const correct = q.answerIndex;
+        const buttons = [...choicesEl.children];
+
+        buttons[correct].classList.add("correct");
+        if (selected !== correct) buttons[selected].classList.add("wrong");
+
+        if (prevAnswer.isCorrect) {
+          resultEl.textContent = "✅ 맞았습니다.";
+          resultEl.classList.add("ok");
+        } else {
+          resultEl.textContent = "❌ 틀렸습니다.";
+          resultEl.classList.add("no");
+        }
+
+        explainEl.innerHTML = `해설)
+${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
+        explainEl.classList.add("show");
+      }
+    }
+
+    async function gradeImmediate() {
+      if (selected === null || locked) return;
+      locked = true;
+
+      // 선택 강제 배너는 제거(단, 마지막 오답 안내는 아래에서 필요 시 다시 띄움)
+      // 라운드 안내 배너도 선택 순간에는 굳이 지우지 않지만, UX 상 선택 강제 배너만 지우는 게 안전
+      if (bannerEl.textContent.includes("보기를 선택해야")) hideBanner();
+
+      const viewOrder = getViewOrder();
+      const currentId = viewOrder[state.idx];
+      const q = qById.get(currentId);
+      const correct = q.answerIndex;
+
+      const buttons = [...choicesEl.children];
+      buttons[correct].classList.add("correct");
+      if (selected !== correct) buttons[selected].classList.add("wrong");
+
+      const isCorrect = (selected === correct);
+
+      if (isCorrect) {
+        resultEl.textContent = "✅ 맞았습니다.";
+        resultEl.classList.add("ok");
+      } else {
+        resultEl.textContent = "❌ 틀렸습니다.";
+        resultEl.classList.add("no");
+      }
+
+      explainEl.innerHTML = `해설)
+${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
+      explainEl.classList.add("show");
+
+      // ✅ 답 저장(오답복습에서도 갱신)
+      state.answered[q.id] = { selected, isCorrect, at: Date.now() };
+      // ✅ 오답복습에서는 "이번 세션에 선택했는지" 기록(이게 있어야 다음으로 이동 가능)
+      if (state.view === "wrongReview") state.reviewed[currentId] = true;
+      saveAppState();
+
+      const counts = computeCounts();
+      const total = allIds.length;
+      const percent = Math.round((counts.correct / total) * 100);
+      if (scoreEl) scoreEl.textContent = `정답 ${counts.correct}`;
+      if (wrongCountEl) wrongCountEl.textContent = `오답 ${counts.wrong}`;
+
+      // ✅ 버튼 활성 상태 갱신(리렌더 없이)
+      nextBtn.disabled = false;
+
+      // ====== 마지막 문제 처리(메인) ======
+      if (state.view === "main" && isAllAnswered()) {
+        const view = getViewOrder();
+        const isLast = (state.idx === view.length - 1);
+
+        if (isLast && !isCorrect) {
+          pendingFinish = true;
+          showBanner("마지막 문제입니다. '>' 버튼 또는 왼쪽 스와이프로 완료 화면으로 이동하세요.");
+          nextBtn.disabled = false;
+          return;
+        }
+
+        pendingFinish = false;
+        // ✅ 자동 완료 진입/자동 이동 없음: 사용자가 '>'로 완료 화면 이동
+        return;
+      }
+
+      // ====== 오답복습: 자동 다음 이동 없음(사용자가 직접 이동) ======
+      if (state.view === "wrongReview") {
+        return;
+      }
+
+
+      // ====== 메인: 자동 다음 이동 없음(사용자가 직접 이동) ======
+      // 정답/오답 모두 해설을 유지한 채 사용자가 '>' 또는 스와이프로 이동
+      return;
+    }
+
+    async function goNext(animated = false) {
+      const view = getViewOrder();
+      if (view.length === 0) return;
+
+      const isLast = (state.idx === view.length - 1);
+      // 🚫 보기 선택 없이 다음으로 이동(스와이프 포함) 방지
+      if (!hasAnsweredCurrent()) {
+        // 메인 마지막 문제 오답(pendingFinish)에서는 '다음'이 완료 화면 이동으로 쓰이므로 예외
+        if (!(state.view === "main" && pendingFinish && isLast)) {
+          showBanner("보기를 선택해야 다음 문제로 이동할 수 있습니다.");
+          return;
+        }
+      }
+
+
+      // ✅ 보기 선택 안 했으면 다음으로 못 감 (버튼/스와이프 공통 차단)
+      // 단, 메인 마지막 오답 pendingFinish는 완료 이동이므로 예외
+      if (!(state.view === "main" && pendingFinish && isLast)) {
+        if (!hasAnsweredCurrent()) {
+          showBanner("보기를 선택해야 다음 문제로 이동할 수 있습니다.");
+          return;
+        }
+      }
+
+      // ====== 오답복습: 마지막 문제에서 '>' 누르면 라운드 종료 처리 ======
+      if (state.view === "wrongReview" && isLast) {
+        finishWrongRound();
+        return;
+      }
+
+
+      // ====== 메인: 마지막 문제에서 '>' 누르면 완료 화면으로 이동(자동 진입 없음) ======
+      if (state.view === "main" && isLast) {
+        if (pendingFinish) {
+          pendingFinish = false;
+          renderDoneScreen();
+          return;
+        }
+        if (isAllAnswered()) {
+          renderDoneScreen();
+          return;
+        }
+      }
+
+      if (state.idx < view.length - 1) {
+        if (animated) await animateSwap("right");
+        state.idx += 1;
+        saveAppState();
+        render();
+      }
+    }
+
+    async function goPrev(animated = false) {
+      const view = getViewOrder();
+      if (view.length === 0) return;
+
+      // ✅ 핵심 패치 유지: 마지막 문제 오답 대기 상태에서 이전으로 이동해도 pendingFinish는 유지, 배너만 숨김
+      if (state.view === "main" && pendingFinish && state.idx === view.length - 1) {
+        hideBanner();
+      }
+
+      if (state.idx > 0) {
+        if (animated) await animateSwap("left");
+        state.idx -= 1;
+        saveAppState();
+        render();
+      }
+    }
+
+    // "처음부터 다시 풀기" + 확인 alert (완료 화면에서만 노출)
+    function onClickReset() {
+      const ok = window.confirm("처음부터 다시 푸시겠습니까?");
+      if (!ok) return;
+      resetAll();
+    }
+
+    function resetAll() {
+      // ✅ 현재 과목만 초기화(홈에서 과목별 초기화 가능)
+      pendingFinish = false;
+      const subj = getSubjectById(app.currentSubjectId) || SUBJECTS[0];
+      const qs = makeDefaultQuizState();
+      qs.order = (subj.questions || []).map(q => q.id);
+
+      app.perSubject[subj.id] = qs;
+      state = app.perSubject[subj.id];
+
+      saveAppState();
+      try { sessionStorage.removeItem(SHUFFLE_ONCE_KEY_PREFIX + subj.id); } catch {}
+
+      applyLaunchShuffleOnce();
+      render();
+    }
+    // ✅ 오답복습 종료(루프 탈출)
+    function exitWrongReview() {
+      pendingFinish = false;
+
+      // 오답복습 상태 초기화
+      state.view = "main";
+      state.wrongOrder = [];
+      state.wrongRound = 0;
+      state.reviewed = {};
+
+      // 완료 화면으로 복귀(오답복습은 완료 화면에서만 시작됨)
+      state.idx = Math.max(0, state.order.length - 1);
+
+      saveAppState();
+      hideBanner();
+      render();
+    }
+
+
+
+    // ✅ 완료 화면에서만 진입하는 오답 풀이(3안: 라운드 시작)
+    function startWrongReview() {
+      pendingFinish = false;
+
+      const wrongNow = getWrongIdsFromAnswered();
+      if (wrongNow.length === 0) {
+        showBanner("현재 오답이 없습니다.");
+        return;
+      }
+
+      state.view = "wrongReview";
+      state.idx = 0;
+      state.wrongRound = 1;
+      state.wrongOrder = fisherYatesShuffle(wrongNow);
+      state.reviewed = {};
+
+      saveAppState();
+      showBanner(`오답 복습 1회차 시작! (${wrongNow.length}문제, 셔플됨)`);
+      render();
+    }
+
+    // ====== 이벤트 ======
+    nextBtn.onclick = () => goNext(true);
+    prevBtn.onclick = () => goPrev(true);
+
+    // ====== 스와이프(왼쪽=다음, 오른쪽=이전) ======
+    let touchStartX = null;
+    let touchStartY = null;
+
+    card.addEventListener("touchstart", (e) => {
+      const t = e.changedTouches?.[0];
+      if (!t) return;
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    }, { passive: true });
+
+    card.addEventListener("touchend", async (e) => {
+      const t = e.changedTouches?.[0];
+      if (!t || touchStartX === null || touchStartY === null) return;
+
+      // 완료 화면에서는 스와이프 네비 비활성(단, pendingFinish로 마지막 화면 유지 중이면 허용)
+      if (state.view === "main" && isAllAnswered() && !(pendingFinish && state.idx === getViewOrder().length - 1)) {
+        touchStartX = touchStartY = null;
+        return;
+      }
+
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+
+      if (Math.abs(dy) > Math.abs(dx)) {
+        touchStartX = touchStartY = null;
+        return;
+      }
+
+      if (dx <= -60) {
+        // 왼쪽 스와이프 = 다음(>)
+        await goNext(true);
+      } else if (dx >= 60) {
+        // 오른쪽 스와이프 = 이전(<)
+        await goPrev(true);
+      }
+
+      touchStartX = touchStartY = null;
+    }, { passive: true });
+
+    // PWA Service Worker 등록
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+
+    
+    // ====== AI에게 물어보세요 (로컬 서버) ======
+
+    const AI_SERVER_BASE = "https://quiz-t8vd.onrender.com";
+
+    const AI_SERVER_CHAT = `${AI_SERVER_BASE}/chat`;
+    const AI_SERVER_CHAT_STREAM = `${AI_SERVER_BASE}/chat_stream`;
+    const AI_SERVER_HEALTH = `${AI_SERVER_BASE}/health`;
+
+    // AI DOM (script가 body 맨 아래라 DOM이 이미 존재)
+    const aiBox = document.getElementById("aiBox");
+    const aiFab = document.getElementById("aiFab");
+    const aiCloseBtn = document.getElementById("aiCloseBtn");
+    const aiSizeBtn = document.getElementById("aiSizeBtn");
+    const aiConnDot2 = document.getElementById("aiConnDot");
+    const aiConnText = document.getElementById("aiConnText");
+    const aiPresets = document.getElementById("aiPresets");
+    const aiPresetsWrap = document.getElementById("aiPresetsWrap");
+
+    const aiBody = document.getElementById("aiBody");
+    const aiMsgs = document.getElementById("aiMsgs");
+    const aiToggleBtn = document.getElementById("aiToggleBtn");
+    const aiAskQuickBtn = document.getElementById("aiAskQuickBtn");
+    const aiBadge = document.getElementById("aiBadge");
+    const serverStatusBtn = document.getElementById("serverStatusBtn");
+    const connDot = document.getElementById("connDot");
+
+    // composer
+    const aiDockSlot = document.getElementById("aiDockSlot");
+    const aiComposer = document.getElementById("aiComposer");
+    const aiPrompt = document.getElementById("aiPrompt");
+    const aiSendBtn = document.getElementById("aiSendBtn");
+    const aiResetBtn = document.getElementById("aiResetBtn");
+    const aiPrepLine = document.getElementById("aiPrepLine");
+    const aiAttachBtn = document.getElementById("aiAttachBtn");
+    const aiMicBtn = document.getElementById("aiMicBtn");
+    const aiStopBtn = document.getElementById("aiStopBtn");
+
+    const tokSendBadge = document.getElementById("tokSendBadge");
+    const tokSumBadge = document.getElementById("tokSumBadge");
+    // (v5) 입력창은 패널 내부에 고정(강제)
+    // ====== AI 대화 상태(문제 단위) ======
+    // - 문제마다 대화 기록/previous_response_id를 분리 보관
+    // - '새로고침(↻)'은 현재 문제의 기록만 초기화
+    let aiPrevResponseId = null;
+    let aiContextText = "";
+    // type: "user" | "assistant" | "status"
+    let aiChatLog = [];
+
+    // ✅ 문제(문항) 단위로 대화/컨텍스트를 분리 유지
+    // - "이 문제 대화 초기화"는 현재 문제 key에만 적용
+    const aiChatLogByQKey = new Map();
+    const aiPrevIdByQKey  = new Map();
+    let aiActiveQKey = null;
+
+    function aiGetCurrentQKey(){
+      try{
+        const viewOrder = getViewOrder();
+        const currentId = viewOrder[state.idx];
+        return "q:" + String(currentId);
+      }catch{
+        return "q:unknown";
+      }
+    }
+
+    function aiSwitchToQKey(nextKey){
+      const key = String(nextKey || "q:unknown");
+      if (aiActiveQKey === key) return;
+
+      // 저장
+      if (aiActiveQKey != null){
+        aiChatLogByQKey.set(aiActiveQKey, aiChatLog);
+        aiPrevIdByQKey.set(aiActiveQKey, aiPrevResponseId);
+      }
+
+      // 로드
+      const loadedLog = aiChatLogByQKey.get(key);
+      aiChatLog = Array.isArray(loadedLog) ? loadedLog : [];
+      aiPrevResponseId = aiPrevIdByQKey.get(key) || null;
+      aiActiveQKey = key;
+    }
+
+
+    // (v5) 메시지 영역이 입력창에 가리지 않도록 입력창 높이를 CSS 변수로 반영
+    try{
+      const ro = new ResizeObserver(()=>{
+        const h = aiComposer ? Math.ceil(aiComposer.getBoundingClientRect().height) : 74;
+        document.documentElement.style.setProperty("--aiComposerH", h + "px");
+      });
+      if (aiComposer) ro.observe(aiComposer);
+      // 초기 1회
+      const h0 = aiComposer ? Math.ceil(aiComposer.getBoundingClientRect().height) : 74;
+      document.documentElement.style.setProperty("--aiComposerH", h0 + "px");
+    }catch{}
+    const AI_GREETING_TEXT = "안녕하세요. AI 튜터입니다. 질문을 선택하거나 직접 입력해주세요.";
+    
+    // FAB와 동일한 별 아이콘을 "SVG 래퍼"로 재사용 (PNG를 <svg><image/></svg>로 감쌈)
+    const AI_STAR_SVG = `
+<svg class="aiStarIcon" viewBox="0 0 64 64" aria-hidden="true" focusable="false"
+     xmlns="http://www.w3.org/2000/svg">
+  <image href="./fab_star_only_transparent.png"
+         x="0" y="0" width="64" height="64"
+         preserveAspectRatio="xMidYMid meet" />
+</svg>`;
+function aiEnsureGreeting(){
+      if (!aiChatLog || aiChatLog.length !== 0) return;
+      aiChatLog.push({ type:"assistant", text: AI_GREETING_TEXT, _system:true });
+    }
+
+    let aiAbortController = null;
+    let aiIsStreaming = false;
+    let aiActiveAssistantIdx = -1;
+
+    // ✅ 새로고침(대화 초기화) 시, 진행 중인 스트리밍/렌더가 다시 끼어드는 것을 막기 위한 epoch
+    let aiChatEpoch = 0;
+
+    // 로딩(딜레이가 길 때만 표시)
+    let aiLoadingIdx = -1;
+    let aiLoadingTimer = null;
+    let aiFirstDeltaArrived = false;
+
+    function aiShowLoading(show){
+      // ✅ 입력창 위 상태 라인으로만 표시(대화 버블을 추가하지 않음)
+      if (!aiPrepLine) return;
+      aiPrepLine.classList.toggle("show", !!show);
+    }
+
+    function aiStartLoadingDelay(){
+      aiFirstDeltaArrived = false;
+      if (aiLoadingTimer) { clearTimeout(aiLoadingTimer); aiLoadingTimer = null; }
+      // 450ms 이상 지연되면 로딩 표시
+      aiLoadingTimer = setTimeout(() => {
+        if (!aiFirstDeltaArrived) aiShowLoading(true);
+      }, 450);
+    }
+
+    function aiStopLoading(){
+      if (aiLoadingTimer) { clearTimeout(aiLoadingTimer); aiLoadingTimer = null; }
+      aiShowLoading(false);
+    }
+
+    
+    function aiSetBadge(ok){
+      // (구버전 배지: 숨김 유지) + 상단바 아이콘 업데이트
+      if (!aiBadge && !serverStatusBtn) return;
+
+      if (aiBadge){
+        if (ok) {
+          aiBadge.textContent = "로컬 서버 연결됨";
+          aiBadge.style.background = "#dcfce7";
+          aiBadge.style.color = "#065f46";
+        } else {
+          aiBadge.textContent = "로컬 서버 미연결";
+          aiBadge.style.background = "#fee2e2";
+          aiBadge.style.color = "#991b1b";
+        }
+      }
+
+      if (serverStatusBtn){
+        serverStatusBtn.classList.toggle("ok", !!ok);
+        serverStatusBtn.classList.toggle("no", !ok);
+        serverStatusBtn.setAttribute("aria-label", ok ? "로컬 서버 연결됨" : "로컬 서버 미연결");
+        serverStatusBtn.title = ok ? "로컬 서버 연결됨" : "로컬 서버 미연결";
+      }
+
+      
+    }
+
+async function aiPing(){
+      try{
+        const r = await fetch(AI_SERVER_HEALTH, { method:"GET" });
+        aiSetBadge(!!r.ok);
+      } catch {
+        aiSetBadge(false);
+      }
+    }
+
+    function aiBuildContext(q){
+      if (!q) return "";
+      const correctNo = (q.answerIndex + 1);
+      const choices = (q.choices || []).map((c, i) => `${i+1}. ${c}`).join("\n");
+      return [
+        `【문제】\n${q.question}`,
+        `【보기】\n${choices}`,
+        `【정답】\n${correctNo}번`,
+        `【해설(원문)】\n${q.explanation}`
+      ].join("\n\n");
+    }
+
+    function aiRefreshContext(){
+      try{
+        const viewOrder = getViewOrder();
+        const currentId = viewOrder[state.idx];
+        const q = qById.get(currentId);
+        // ✅ 문제 단위로 대화 기록 스위칭
+        aiSwitchToQKey("q:" + String(currentId));
+        aiContextText = aiBuildContext(q);
+      } catch {
+        aiSwitchToQKey("q:unknown");
+        aiContextText = "";
+      }
+    }
+
+    function aiPush(type, text){
+      aiChatLog.push({ type, text });
+      aiRenderMsgs();
+    }
+function aiRenderMsgs(){
+  if (!aiMsgs) return;
+
+  // ✅ 사용자가 위로 스크롤해서 읽는 중이면 자동 스크롤로 끌어내리지 않음
+  const before = {
+    scrollTop: aiMsgs.scrollTop,
+    scrollHeight: aiMsgs.scrollHeight,
+    clientHeight: aiMsgs.clientHeight
+  };
+  const nearBottom = (before.scrollHeight - (before.scrollTop + before.clientHeight)) < 24;
+
+  aiMsgs.innerHTML = "";
+
+  for (let i = 0; i < aiChatLog.length; i++) {
+    const m = aiChatLog[i];
+    // ✅ 스트리밍 시작 직후(첫 delta 전) 빈 assistant 버블(커서만 보이는 박스) 숨김
+    if (m && m.type === "assistant" && (!m.text || m.text.length === 0) && aiIsStreaming && aiActiveAssistantIdx === i) {
+      continue;
+    }
+    const div = document.createElement("div");
+    if (m.type === "status") div.className = "aiBubble status";
+    else if (m.type === "user") div.className = "aiBubble user";
+    else div.className = "aiBubble ai";
+
+    // 로딩 버블(동적 dots)
+    if (m.type === "loading") {
+      div.className = "aiBubble loading";
+      div.innerHTML = `${escapeHtml(m.text || "로딩중")}<span class="aiDots"><span></span><span></span><span></span></span>`;
+    }
+    // 스트리밍 중인 assistant 버블에 타이핑 커서 표시
+    else if (m.type === "assistant" && aiIsStreaming && aiActiveAssistantIdx === i) {
+      div.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml((m.text || "") + "▌")}</span>`;
+    } else if (m.type === "assistant") {
+      div.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(m.text || "")}</span>`;
+    } else {
+      div.textContent = m.text;
+    }
+    aiMsgs.appendChild(div);
+  }
+
+  if (nearBottom) {
+    aiMsgs.scrollTop = aiMsgs.scrollHeight;
+  }
+}
+
+    function aiSetComposerEnabled(enabled){
+      if (aiSendBtn) aiSendBtn.disabled = !enabled || !(aiPrompt && aiPrompt.value.trim().length);
+      if (aiPrompt) aiPrompt.disabled = !enabled;
+      if (aiSendBtn) aiSendBtn.classList.toggle("isActive", enabled && (aiPrompt && aiPrompt.value.trim().length>0));
+    }
+
+    
+    // ====== 토큰(예상) UX ======
+    // 정확한 토큰 수는 모델/인코딩에 따라 달라질 수 있어 "예상"으로만 표시합니다.
+    function aiEstimateTokens(text){
+      const t = String(text || "").trim();
+      if (!t) return 0;
+      // 한국어 기준: 대략 1~2글자당 1토큰 정도로 보수적 추정
+      return Math.max(1, Math.round(t.length / 1.8));
+    }
+
+    const AI_QUICK_SUMMARY_PROMPT = "이 문제의 핵심 포인트를 3줄로 요약하고, 오답 함정 포인트도 알려줘.";
+
+    function aiUpdateTokenBadges(){
+      const qTok = aiEstimateTokens(aiPrompt ? aiPrompt.value : "");
+      const sTok = aiEstimateTokens(AI_QUICK_SUMMARY_PROMPT);
+
+      if (tokSumBadge) tokSumBadge.textContent = "≈" + sTok;
+
+      if (tokSendBadge){
+        if (qTok <= 0) {
+          tokSendBadge.style.display = "none";
+        } else {
+          tokSendBadge.style.display = "inline-flex";
+          tokSendBadge.textContent = "≈" + qTok;
+        }
+      }
+
+      if (aiTokenHint){
+        aiTokenHint.innerHTML = `예상 토큰: <b>${qTok}</b>`;
+      }
+    }
+
+    function aiAutosize(){
+      if (!aiPrompt) return;
+      const hasText = aiPrompt.value.trim().length > 0;
+
+      if (aiSendBtn) {
+        aiSendBtn.disabled = !hasText || aiPrompt.disabled;
+        aiSendBtn.classList.toggle("isActive", hasText);
+      }
+      aiUpdateTokenBadges();
+    }
+
+
+    function aiSetPresetsCollapsed(collapsed){
+      if (!aiPresetsWrap) return;
+      aiPresetsWrap.classList.toggle("collapsed", !!collapsed);
+    }
+
+    async function aiSendStream(userText){
+  // ✅ 스트리밍 렌더링 최적화:
+  // - 스트리밍 중에는 assistant 버블 1개만 유지
+  // - delta 수신 시마다 requestAnimationFrame 프레임 단위로 해당 버블만 갱신
+  const epoch = aiChatEpoch;
+  aiAbortController = new AbortController();
+
+  // 스트리밍 중단 버튼 표시(기존 UX 유지)
+  if (aiStopBtn) {
+    aiStopBtn.style.display = "inline-flex";
+    aiStopBtn.disabled = false;
+  }
+
+  const res = await fetch(AI_SERVER_CHAT_STREAM, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json; charset=utf-8", "Accept":"text/event-stream" },
+    cache:"no-store",
+    body: JSON.stringify({
+      message: userText,
+      context: aiContextText,
+      previous_response_id: aiPrevResponseId
+    }),
+    signal: aiAbortController.signal
+  });
+
+  if (!res.ok) {
+    let detail = "";
+    try { detail = await res.text(); } catch {}
+    throw new Error("HTTP " + res.status + (detail ? (" | " + detail) : ""));
+  }
+
+  // assistant message placeholder
+  // ✅ 인덱스 밀림 방지: 로딩 버블이 splice되면 assistantIdx가 깨질 수 있어, 스트림 시작 전에 로딩을 정리
+  aiFirstDeltaArrived = true;
+  aiStopLoading();
+
+  // assistant message placeholder (log에는 유지)
+  const assistantIdx = aiChatLog.length;
+  aiChatLog.push({ type:"assistant", text:"" });
+  aiIsStreaming = true;
+  aiActiveAssistantIdx = assistantIdx;
+
+  // ====== DOM: 스트리밍 버블 1개를 직접 만들고, 그 요소만 갱신 ======
+  const isNearBottom = () => {
+    if (!aiMsgs) return true;
+    const remain = aiMsgs.scrollHeight - (aiMsgs.scrollTop + aiMsgs.clientHeight);
+    return remain < 24;
+  };
+
+  // 사용자가 읽는 중이면 자동 스크롤 방해하지 않음 (초기 상태에서 nearBottom이면 계속 따라감)
+  let autoScroll = isNearBottom();
+
+  // 최초 1회만 전체 렌더(이전 로그 유지)
+  aiRenderMsgs();
+
+  // 스트리밍 버블 요소 찾기(없으면 생성)
+  let streamEl = null;
+  // aiRenderMsgs()는 마지막에 append하므로, 마지막 bubble을 candidate로 잡는다.
+  if (aiMsgs && aiMsgs.lastElementChild && aiMsgs.lastElementChild.classList.contains("aiBubble")) {
+    const last = aiMsgs.lastElementChild;
+    // 마지막이 user/status일 수 있으니, assistant 버블을 찾는다.
+    if (last.classList.contains("ai")) streamEl = last;
+  }
+  if (!streamEl && aiMsgs) {
+    streamEl = document.createElement("div");
+    streamEl.className = "aiBubble ai";
+    aiMsgs.appendChild(streamEl);
+  }
+
+  // 스트리밍 텍스트 버퍼
+  let streamText = "";
+  let rafPending = false;
+
+  const schedulePaint = () => {
+    if (!streamEl || rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      rafPending = false;
+      if (!streamEl) return;
+      if (epoch !== aiChatEpoch) return; // reset 이후 유입 무시
+
+      // 사용자가 중간에 스크롤해서 벗어나면 자동 스크롤 중단
+      if (autoScroll && !isNearBottom()) autoScroll = false;
+
+      streamEl.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(streamText + (aiIsStreaming ? "▌" : ""))}</span>`;
+if (autoScroll && aiMsgs) aiMsgs.scrollTop = aiMsgs.scrollHeight;
+    });
+  };
+
+  // 스트리밍 시작 직후(첫 delta 전) 커서만 표시
+  streamText = "";
+  schedulePaint();
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let buf = "";
+
+  const handleDeltaText = (t) => {
+    if (epoch !== aiChatEpoch) return; // reset 이후 유입 무시
+    if (!t) return;
+    if (!aiFirstDeltaArrived) { aiFirstDeltaArrived = true; aiStopLoading(); }
+    streamText += t;
+    // log에도 누적(마지막 정리 없이도 상태 유지)
+    if (aiChatLog && aiChatLog[assistantIdx]) aiChatLog[assistantIdx].text = streamText;
+    schedulePaint();
+  };
+
+  const handleMsg = (msg) => {
+    if (epoch !== aiChatEpoch) return; // reset 이후 유입 무시
+    if (!msg) return;
+
+    if (msg.type === "status" && msg.text){
+      // 상태 로그는 UI에서 숨김
+      return;
+    }
+    if (msg.type === "delta" && typeof msg.text === "string"){
+      handleDeltaText(msg.text);
+      return;
+    }
+    if (msg.type === "meta"){
+      if (msg.previous_response_id) aiPrevResponseId = msg.previous_response_id;
+      if (aiActiveQKey) aiPrevIdByQKey.set(aiActiveQKey, aiPrevResponseId);
+      return;
+    }
+    if (msg.type === "done"){
+      aiStopLoading();
+      return;
+    }
+    if (msg.type === "error"){
+      throw new Error(msg.text || "스트리밍 오류");
+    }
+    // (호환) 서버가 최종 텍스트를 다른 필드로 주는 경우
+    if (typeof msg.text === "string"){
+      handleDeltaText(msg.text);
+    }
+  };
+
+  try {
+    while(true){
+      if (epoch !== aiChatEpoch) return; // reset 이후 즉시 종료
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buf += decoder.decode(value, { stream:true });
+
+      // SSE 구현에 따라 \n\n 또는 \n 단위가 섞일 수 있어, 라인 기준으로 빠르게 처리
+      const lines = buf.split(/\r?\n/);
+      buf = lines.pop() || "";
+
+      for (let line of lines){
+        line = line.trimEnd();
+        if (!line) continue;
+
+        // SSE 포맷: data: ...
+        if (line.startsWith("data:")){
+          let raw = line.replace(/^data:\s?/, "").trim();
+          if (!raw) continue;
+          if (raw === "[DONE]"){
+            aiStopLoading();
+            return;
+          }
+          try {
+            const msg = JSON.parse(raw);
+            handleMsg(msg);
+          } catch {
+            // JSON이 아니면 텍스트 델타로 취급
+            handleDeltaText(raw);
+          }
+          continue;
+        }
+
+        // SSE 메타 필드는 무시
+        if ((res.headers.get("content-type") || "").toLowerCase().includes("text/event-stream")
+          && (line.startsWith("event:") || line.startsWith("id:") || line.startsWith("retry:"))){
+          continue;
+        }
+
+        // JSONL 또는 텍스트 스트림
+        const raw = line.trim();
+        if (!raw) continue;
+        try {
+          const msg = JSON.parse(raw);
+          handleMsg(msg);
+          if (msg && msg.type === "done") return;
+        } catch {
+          handleDeltaText(raw);
+        }
+      }
+    }
+
+    // tail 처리
+    const tail = (buf || "").trim();
+    if (tail){
+      if (tail.startsWith("data:")){
+        const raw = tail.replace(/^data:\s?/, "").trim();
+        if (raw && raw !== "[DONE]"){
+          try { handleMsg(JSON.parse(raw)); } catch { handleDeltaText(raw); }
+        }
+      } else {
+        try { handleMsg(JSON.parse(tail)); } catch { /* ignore */ }
+      }
+    }
+  } catch (e) {
+    // 중단(Abort) 시에는 조용히 종료 플로우
+    if (e && (e.name === "AbortError" || String(e).includes("AbortError"))) return;
+    throw e;
+  } finally {
+    if (epoch !== aiChatEpoch) {
+      try { reader.releaseLock(); } catch {}
+      return;
+    }
+    aiStopLoading();
+    try { reader.releaseLock(); } catch {}
+    aiIsStreaming = false;
+    aiActiveAssistantIdx = null;
+    aiAbortController = null;
+
+    // 커서 제거 + 최종 텍스트 고정
+    if (streamEl){
+      streamEl.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(streamText)}</span>`;
+    }
+    // 전체 렌더 1회로 상태 정리(스크롤/커서 등)
+    aiRenderMsgs();
+
+    if (aiStopBtn) {
+      aiStopBtn.style.display = "none";
+      aiStopBtn.disabled = true;
+    }
+  }
+}
+
+async function aiSendOnce(userText){
+      // 기존 JSON 응답(/chat) fallback
+      const res = await fetch(AI_SERVER_CHAT, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json; charset=utf-8", "Accept":"text/event-stream" },
+    cache:"no-store",
+        body: JSON.stringify({
+          message: userText,
+          context: aiContextText,
+          previous_response_id: aiPrevResponseId
+        })
+      });
+
+      if (!res.ok) {
+        let detail = "";
+        try { detail = await res.text(); } catch {}
+        throw new Error("HTTP " + res.status + (detail ? (" | " + detail) : ""));
+      }
+
+      const data = await res.json();
+      aiPrevResponseId = data.previous_response_id || null;
+      if (aiActiveQKey) aiPrevIdByQKey.set(aiActiveQKey, aiPrevResponseId);
+      aiPush("assistant", (data.reply || "(빈 응답)"));
+    }
+
+    async function aiSend(userText){
+      if (!userText) return;
+
+      aiRefreshContext();
+      if (!aiContextText) {
+        aiPush("assistant", "현재 문제 컨텍스트를 불러오지 못했습니다. 퀴즈 화면에서 다시 시도해주세요.");
+        return;
+      }
+
+      aiPush("user", userText);
+      aiSetComposerEnabled(false);
+
+      // 상태 로그(추론 단계 문구)는 숨기고, 지연 시에만 로딩 표시
+      aiStartLoadingDelay();
+      aiSetPresetsCollapsed(true);
+
+      try{
+        // 1) 스트리밍 먼저 시도
+        await aiSendStream(userText);
+        aiSetBadge(true);
+      } catch (e){
+        // 🔎 디버그: 스트리밍 실패 원인을 화면에 표시
+        aiPush("status", "⚠️ 지금은 /chat_stream 실패로 /chat(단발) 모드로 전환했습니다.\n원인: " + String(e && e.message ? e.message : e));
+        // 2) 스트리밍이 없으면 JSON 방식으로 fallback
+        // 스트리밍 실패 시, 상태로그를 하나 더 남기고 단발 응답 진행
+        // 스트리밍 미지원 → 일반 모드
+        try{
+          await aiSendOnce(userText);
+          aiSetBadge(true);
+        } catch (e2){
+          aiPush("assistant",
+            "오류가 발생했습니다.\n" +
+            "에러: " + String(e2 && e2.message ? e2.message : e2) + "\n\n" +
+            "체크:\n" +
+            "1) ai_server.py 실행 중인지\n" +
+            "2) PowerShell에서 OPENAI_API_KEY가 설정됐는지\n" +
+            "3) http://127.0.0.1:8787/health 가 ok인지\n" +
+            "4) (스트리밍 사용 시) /chat_stream 엔드포인트가 있는지"
+          );
+          aiSetBadge(false);
+        }
+      } finally {
+        aiStopLoading();
+        aiSetComposerEnabled(true);
+        aiAutosize();
+        aiShowLoading(false);
+      }
+    }
+
+    // AI UI 이벤트 바인딩
+    if (aiBox) {
+
+// ✅ fixed 포지션이 상위 transform의 영향을 받지 않도록 패널/FAB/도크슬롯을 body로 이동
+// (특히 Android WebView/삼성인터넷에서 'transform 부모 + position:fixed' 조합은 fixed가 클리핑되거나 사라질 수 있음)
+try{
+  if (aiBox && aiBox.parentElement !== document.body) document.body.appendChild(aiBox);
+  if (aiDockSlot && aiDockSlot.parentElement !== document.body) document.body.appendChild(aiDockSlot);
+  if (aiFab && aiFab.parentElement !== document.body) document.body.appendChild(aiFab);
+} catch {}
+
+// ✅ 모바일 주소창/툴바 변동에도 패널 높이 계산이 정확하도록 --vh 단위 동기화
+// ✅ 키보드 보정: visualViewport 값 출렁임으로 --kb가 과대 계산되는 현상 완화
+// - AI 입력창 focus 시점의 baseline(innerHeight)을 잡고 그 기준으로만 kb 계산
+// - 작은 변화(주소창/툴바 애니메이션)는 무시
+// - 급격한 스파이크는 마지막 정상값으로 완충
+// - resize/scroll 이벤트는 rAF로 모아 1프레임 1회만 반영
+const kbFix = {
+  baselineInnerH: null,
+  lastGoodKb: 0,
+  lastAppliedKb: 0,
+  raf: 0,
+};
+
+function aiComputeKb(){
+  const vv = window.visualViewport;
+  if (!vv) return 0;
+  if (kbFix.baselineInnerH == null) return 0;
+
+  // ✅ offsetTop(주소창 등) 영향은 제외하고, baseline - vv.height로만 계산
+  let raw = Math.max(0, kbFix.baselineInnerH - vv.height);
+
+  // ✅ 주소창/툴바 변동으로 인한 소폭 변화는 무시
+  if (raw < 80) raw = 0;
+
+  // ✅ 안전 클램프(기기별 튐 방지)
+  raw = Math.min(raw, Math.max(0, kbFix.baselineInnerH * 0.8));
+
+  // ✅ 스파이크 완충(갑자기 '위로 튀는' 값은 마지막 정상값으로 고정)
+  const UP_SPIKE_PX = 140;
+  const jumpUp = raw - kbFix.lastGoodKb;
+  if (raw > 0 && kbFix.lastGoodKb > 0 && jumpUp > UP_SPIKE_PX){
+    raw = kbFix.lastGoodKb;
+  }
+
+  // ✅ 정상 범위로 판단되면 lastGood 갱신
+  if (raw === 0) {
+    kbFix.lastGoodKb = 0;
+  } else if (Math.abs(raw - kbFix.lastGoodKb) <= UP_SPIKE_PX || kbFix.lastGoodKb === 0) {
+    kbFix.lastGoodKb = raw;
+  }
+
+  // ✅ 부드럽게 적용(키보드 올라오는 동안만 완충), 내려갈 때는 즉시 0
+  let applied = (kbFix.lastAppliedKb * 0.65) + (raw * 0.35);
+  if (raw === 0) applied = 0;
+  kbFix.lastAppliedKb = applied;
+
+  return Math.max(0, Math.round(applied));
+}
+
+function aiApplyViewportVars(){
+  const vv = window.visualViewport;
+  const root = document.documentElement;
+
+  // 1) vh 변수(레이아웃 안정화)
+  const H = vv ? vv.height : window.innerHeight;
+  root.style.setProperty("--vh", (H / 100) + "px");
+
+  // 2) 키보드 추정치: focus 시점 baseline 기준으로만 계산(툴바 출렁임 무시)
+  let kbRaw = 0;
+  if (vv && window.__aiKbBaselineH){
+    kbRaw = Math.max(0, Math.round(window.__aiKbBaselineH - vv.height));
+  }
+
+  // 작은 흔들림 제거
+  if (kbRaw < 80) kbRaw = 0;
+
+  // 스파이크 컷(갑작스런 튐 방지)
+  const prev = window.__aiKbPrev || 0;
+  if (kbRaw > 0 && prev > 0 && Math.abs(kbRaw - prev) > 140){
+    kbRaw = prev;
+  }
+
+  // 부드러운 상승(내려갈 때는 즉시)
+  let kb = kbRaw;
+  if (kbRaw > prev){
+    kb = Math.round(prev * 0.35 + kbRaw * 0.65);
+  }
+  window.__aiKbPrev = kb;
+
+  // 3) 강제 조건: 입력창은 무조건 패널 내부에 유지
+  // -> 입력창을 바깥 슬롯으로 올리지 않고, 패널 자체를 '필요한 만큼만' 위로 이동시켜
+  //    패널 하단(=입력창)이 키보드 상단에 가리지 않게 함.
+  let shift = 0;
+  if (vv && kb > 0){
+    const keyboardTop = vv.height + (vv.offsetTop || 0);
+    const panel = document.getElementById("aiPanel");
+    if (panel){
+      const rect = panel.getBoundingClientRect();
+      const overlap = rect.bottom - keyboardTop; // 키보드가 패널 하단을 가리는 양
+      if (overlap > 0){
+        // (옵션) 영상처럼 살짝 더 따라오게: kb의 18%를 최대 48px까지만 추가
+        const follow = Math.min(48, Math.round(kb * 0.18));
+        shift = overlap + follow;
+
+        // 화면 상단으로 과하게 밀려 올라가지 않게 클램프(최소 8px 여백 유지)
+        const maxShift = Math.max(0, Math.round(rect.top - 8));
+        if (shift > maxShift) shift = maxShift;
+      }
+    }
+  }
+
+  root.style.setProperty("--aiShift", shift + "px");
+
+  // (호환) 다른 코드가 참조하는 변수들은 0으로 유지
+  root.style.setProperty("--kbSlot", "0px");
+  root.style.setProperty("--kb", "0px");
+}
+
+function aiScheduleViewportVars(){
+  if (kbFix.raf) return;
+  kbFix.raf = requestAnimationFrame(() => {
+    kbFix.raf = 0;
+    aiApplyViewportVars();
+  });
+}
+
+function aiCaptureBaseline(){
+  // focus 시점(키보드 뜨기 전) innerHeight를 기준으로 고정
+  kbFix.baselineInnerH = window.innerHeight;
+  // 현재 적용값을 기준으로 스파이크 필터 초기화
+  kbFix.lastGoodKb = kbFix.lastAppliedKb || 0;
+  aiScheduleViewportVars();
+}
+function aiClearBaseline(){
+  kbFix.baselineInnerH = null;
+  kbFix.lastGoodKb = 0;
+  kbFix.lastAppliedKb = 0;
+  document.documentElement.style.setProperty("--kbSlot", "0px");
+  document.documentElement.style.setProperty("--aiShift", "0px");
+  document.documentElement.style.setProperty("--kb", "0px");
+  aiScheduleViewportVars();
+}
+
+// 초기 1회
+aiScheduleViewportVars();
+
+// viewport 변화는 rAF로 모아서 반영
+if (window.visualViewport){
+  window.visualViewport.addEventListener("resize", aiScheduleViewportVars, { passive:true });
+  window.visualViewport.addEventListener("scroll", aiScheduleViewportVars, { passive:true });
+}
+window.addEventListener("resize", aiScheduleViewportVars, { passive:true });
+
+// AI 입력창 focus/blur에서 baseline 제어
+if (aiPrompt){
+  aiPrompt.addEventListener("focus", aiCaptureBaseline, { passive:true });
+  aiPrompt.addEventListener("focus", () => aiSetPresetsCollapsed(false), { passive:true });
+  aiPrompt.addEventListener("blur", aiClearBaseline, { passive:true });
+}
+      // ====== A안 Bottom Sheet 컨트롤 (최종 스펙) ======
+      const AI_PANEL_HEIGHT_KEY = "ai_panel_height_vh_v1";
+      const AI_MIN_VH = 30;
+      const AI_MAX_VH = 80;
+      const AI_DEFAULT_VH = 50;
+
+      function aiClampVh(vh){
+        const n = Number(vh);
+        if (!Number.isFinite(n)) return AI_DEFAULT_VH;
+        return Math.max(AI_MIN_VH, Math.min(AI_MAX_VH, n));
+      }
+
+      function aiLoadPanelVh(){
+        try{
+          const v = localStorage.getItem(AI_PANEL_HEIGHT_KEY);
+          if (v == null) return AI_DEFAULT_VH;
+          return aiClampVh(parseFloat(v));
+        } catch {
+          return AI_DEFAULT_VH;
+        }
+      }
+
+      function aiApplyPanelVh(vh, persist=false){
+        if (!aiBox) return;
+        const clamped = aiClampVh(vh);
+        aiBox.style.setProperty("--aiPanelVh", String(clamped));
+        if (persist){
+          try { localStorage.setItem(AI_PANEL_HEIGHT_KEY, String(clamped)); } catch {}
+        }
+      }
+
+      // 초기 높이(열기 전에도 마지막 값 유지)
+      aiApplyPanelVh(aiLoadPanelVh(), false);
+
+      // ====== 드래그로 크기 조절 (모바일/PC 공통: Pointer Events) ======
+      const aiGrabber = document.getElementById("aiGrabber");
+
+      let dragActive = false;
+      let dragStartY = 0;
+      let dragStartVh = AI_DEFAULT_VH;
+
+      function onGrabberDown(e){
+        if (!aiBox || aiBox.style.display === "none") return;
+        dragActive = true;
+        aiBox.classList.add("dragging");
+        document.body.classList.add("aiResizing");
+
+        dragStartY = e.clientY;
+        // 현재 적용 중인 vh를 읽어오기
+        const cur = parseFloat(getComputedStyle(aiBox).getPropertyValue("--aiPanelVh")) || aiLoadPanelVh();
+        dragStartVh = aiClampVh(cur);
+
+        if (aiGrabber && aiGrabber.setPointerCapture && e.pointerId != null) {
+          try { aiGrabber.setPointerCapture(e.pointerId); } catch {}
+        }
+        e.preventDefault();
+      }
+
+      function onGrabberMove(e){
+        if (!dragActive) return;
+        const dy = e.clientY - dragStartY;
+        const H = (window.visualViewport && window.visualViewport.height) ? window.visualViewport.height : window.innerHeight;
+        const deltaVh = (dy / H) * 100;
+        const nextVh = dragStartVh - deltaVh; // 위로 끌면 커짐
+        aiApplyPanelVh(nextVh, false);
+        e.preventDefault();
+      }
+
+      function onGrabberUp(e){
+        if (!dragActive) return;
+        dragActive = false;
+        aiBox.classList.remove("dragging");
+        document.body.classList.remove("aiResizing");
+
+        const cur = parseFloat(getComputedStyle(aiBox).getPropertyValue("--aiPanelVh")) || aiLoadPanelVh();
+        aiApplyPanelVh(cur, true); // ✅ 스냅 없음: 현재 값 그대로 저장
+        if (e) e.preventDefault();
+      }
+
+      if (aiGrabber){
+        aiGrabber.addEventListener("pointerdown", onGrabberDown, { passive:false });
+        document.addEventListener("pointermove", onGrabberMove, { passive:false, capture:true });
+        document.addEventListener("pointerup", onGrabberUp, { passive:false, capture:true });
+        document.addEventListener("pointercancel", onGrabberUp, { passive:false, capture:true });
+        aiGrabber.addEventListener("lostpointercapture", onGrabberUp, { passive:false });
+      }
+
+      function aiOpenPanel(){
+        if (!aiBox) return;
+
+        // ✅ 패널이 열리면 FAB는 숨김
+        if (aiFab) aiFab.style.display = "none";
+
+        // ✅ FAB 클릭 시 기본 50%로 열되(첫 진입), 이후엔 마지막 높이 유지
+        aiApplyPanelVh(aiLoadPanelVh() ?? AI_DEFAULT_VH, false);
+
+        aiBox.style.display = "flex";
+        if (aiDockSlot) aiDockSlot.style.display = "block";
+        requestAnimationFrame(() => {
+          aiBox.classList.add("open");
+        });
+
+        aiPing();
+        aiRefreshContext();
+        aiEnsureGreeting();
+        aiRenderMsgs();
+        aiAutosize();
+        aiSetPresetsCollapsed(false);
+
+        // ✅ 자동 포커스 금지(커서/키보드 자동 팝업 방지)
+      }
+
+      function aiClosePanel(){
+        aiShowLoading(false);
+        if (!aiBox) return;
+        aiBox.classList.remove("open");
+
+        const done = () => {
+          aiBox.style.display = "none"; // ✅ 닫기: display:none
+          if (aiDockSlot) aiDockSlot.style.display = "none";
+          // ✅ 퀴즈 화면이면 FAB 다시 노출
+          if (aiFab && app && app.screen === "quiz") aiFab.style.display = "inline-flex";
+          aiBox.removeEventListener("transitionend", done);
+        };
+        aiBox.addEventListener("transitionend", done);
+
+        // 안전장치
+        setTimeout(() => {
+          if (!aiBox.classList.contains("open")) {
+            aiBox.style.display = "none";
+            if (aiDockSlot) aiDockSlot.style.display = "none";
+            if (aiFab && app && app.screen === "quiz") aiFab.style.display = "inline-flex";
+          }
+        }, 320);
+      }
+
+      function aiResetCurrentQuestionChat(){
+        // ✅ 진행 중 스트리밍이 있으면 중단
+        try{
+          aiChatEpoch++; // 진행 중인 스트리밍/렌더 무효화
+        }catch{}
+
+        aiStopLoading();
+        aiShowLoading(false);
+
+        if (aiAbortController) {
+          try { aiAbortController.abort(); } catch {}
+        }
+        aiIsStreaming = false;
+        aiActiveAssistantIdx = null;
+        aiAbortController = null;
+        if (aiStopBtn) {
+          aiStopBtn.style.display = "none";
+          aiStopBtn.disabled = true;
+        }
+
+        // 현재 문제 key 보장
+        const key = aiGetCurrentQKey();
+        aiSwitchToQKey(key);
+
+        // 대화 로그/prev id 초기화(현재 문제만)
+        aiChatLog = [];
+        aiPrevResponseId = null;
+        aiChatLogByQKey.set(key, aiChatLog);
+        aiPrevIdByQKey.set(key, aiPrevResponseId);
+
+        // Greeting 복원 + 렌더
+        aiEnsureGreeting();
+        aiRenderMsgs();
+        aiSetPresetsCollapsed(false);
+
+        // 입력창은 바로 다시 질문 가능
+        if (aiPrompt){
+          aiPrompt.value = "";
+          aiAutosize();
+          try { aiPrompt.focus({ preventScroll:true }); } catch { try { aiPrompt.focus(); } catch {} }
+        }
+      }
+
+      if (aiFab) aiFab.onclick = aiOpenPanel;
+      if (aiCloseBtn) aiCloseBtn.onclick = aiClosePanel;
+if (aiCloseBtn) aiCloseBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); }, { passive:false });
+
+      if (aiResetBtn) {
+        aiResetBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagation(); }, { passive:false });
+        aiResetBtn.onclick = () => {
+          // 현재 문제 컨텍스트/키 동기화
+          aiRefreshContext();
+
+          const msg = aiIsStreaming
+            ? "현재 답변 생성을 중단하고, 이 문제의 대화를 초기화합니다.\n되돌릴 수 없습니다. 계속할까요?"
+            : "이 문제에서 AI와 나눈 대화를 초기화합니다.\n문제 진행 상태와 정답 기록은 유지됩니다.\n되돌릴 수 없습니다. 계속할까요?";
+
+          const ok = window.confirm(msg);
+          if (!ok) return;
+          aiResetCurrentQuestionChat();
+        };
+      }
+
+// preset 질문
+      const PRESET_MAP = {
+        summary: "이 문제의 핵심 포인트를 3줄로 요약하고, 오답 함정 포인트도 알려줘.",
+        whyWrong: "내가 헷갈리는 보기를 하나씩 반박해줘. 특히 왜 오답인지 논리로 설명해줘.",
+        trap: "이 문제의 오답 함정 포인트(자주 속는 표현/키워드)를 정리해줘. 한 줄 팁도.",
+        exam: "시험에서 비슷하게 나오면 어떤 식으로 변형되는지 3가지 예시로 알려줘."
+      };
+
+      function aiUpdatePresetTokenBadges(){
+        if (!aiPresets) return;
+        const chips = aiPresets.querySelectorAll(".aiChip");
+        chips.forEach(ch => {
+          const key = ch.getAttribute("data-preset");
+          const txt = PRESET_MAP[key] || "";
+          const tok = aiEstimateTokens(txt);
+          const badge = ch.querySelector(".chipTok");
+          if (badge) badge.textContent = "≈" + tok;
+        });
+      }
+      aiUpdatePresetTokenBadges();
+
+      if (aiPresets){
+        aiPresets.addEventListener("click", (e) => {
+          const btn = e.target.closest(".aiChip");
+          if (!btn) return;
+          const key = btn.getAttribute("data-preset");
+          const prompt = PRESET_MAP[key];
+          if (!prompt) return;
+          aiOpenPanel();
+          aiSend(prompt);
+        });
+      }
+
+      // 홈 화면에서는 숨기고, 퀴즈 화면에서만 보이게
+      const _origSetScreen = setScreen;
+      setScreen = function(next){
+        _origSetScreen(next);
+        if (next === "home") {
+          if (aiFab) aiFab.style.display = "none";
+          aiClosePanel();
+          aiBox.style.display = "none";
+        } else {
+          aiBox.style.display = "none";
+          if (aiFab) aiFab.style.display = "inline-flex";
+          aiPing();
+          aiRefreshContext();
+          aiRenderMsgs();
+          aiAutosize();
+        }
+      };
+
+      // 초기 상태
+      if (app.screen === "quiz") {
+        aiBox.style.display = "none";
+        if (aiFab) aiFab.style.display = "inline-flex";
+      } else {
+        aiBox.style.display = "none";
+        if (aiFab) aiFab.style.display = "none";
+      }
+
+      if (serverStatusBtn) {
+        serverStatusBtn.onclick = () => aiPing();
+      }
+      if (app.screen === "quiz") {
+        aiPing();
+        aiRefreshContext();
+        aiRenderMsgs();
+      }
+
+      if (aiToggleBtn && aiBody) {
+        aiToggleBtn.onclick = () => {
+          const open = aiBody.classList.toggle("show");
+          aiToggleBtn.textContent = open ? "닫기" : "열기";
+          if (open) {
+            aiRenderMsgs();
+            setTimeout(() => aiPrompt && aiPrompt.focus(), 30);
+          }
+        };
+      }
+
+      // autosize + send enable
+      if (aiPrompt) {
+        aiPrompt.addEventListener("input", aiAutosize);
+        aiPrompt.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            if (aiSendBtn && !aiSendBtn.disabled) aiSendBtn.click();
+          }
+        });
+        aiAutosize();
+      }
+
+      if (aiSendBtn) {
+        aiSendBtn.onclick = () => {
+          const t = (aiPrompt && aiPrompt.value ? aiPrompt.value : "").trim();
+          if (!t) return;
+          aiPrompt.value = "";
+          aiAutosize();
+
+          if (aiBody && !aiBody.classList.contains("show")) {
+            aiBody.classList.add("show");
+            if (aiToggleBtn) aiToggleBtn.textContent = "닫기";
+          }
+          aiSend(t);
+        };
+      }
+
+// 중단 버튼: 스트리밍 요청 취소
+      if (aiStopBtn) {
+        aiStopBtn.onclick = () => {
+          if (aiAbortController) {
+            try { aiAbortController.abort(); } catch {}
+            aiPush("status", "응답이 중단되었습니다.");
+          }
+        };
+      }
+
+      if (aiAskQuickBtn) {
+        aiAskQuickBtn.onclick = () => {
+          if (aiBody && !aiBody.classList.contains("show")) {
+            aiBody.classList.add("show");
+            if (aiToggleBtn) aiToggleBtn.textContent = "닫기";
+          }
+          aiSend(AI_QUICK_SUMMARY_PROMPT);
+        };
+      }
+
+      // 문제 이동 시 컨텍스트 갱신(버튼/스와이프 모두)
+      const _origRender = render;
+      render = function(){
+        _origRender();
+        if (app.screen === "quiz") {
+          aiRefreshContext();
+          // 패널이 열려있다면, 문제 이동 시 해당 문제 대화로 즉시 전환
+          if (aiBox && aiBox.style.display !== "none") {
+            aiEnsureGreeting();
+            aiRenderMsgs();
+            aiAutosize();
+          }
+        }
+      };
+    }
+// 앱 시작
+    bindSubjectContext(app.currentSubjectId);
+    if (app.screen === "quiz") applyLaunchShuffleOnce();
+    render();
+  </script>
+</body>
+</html>
