@@ -836,6 +836,150 @@ width: 100%;
 }
 /* =============================================================== */
 
+
+/* Start options sheet */
+.startOverlay{
+  position: fixed; inset: 0;
+  background: rgba(17, 24, 39, .45);
+  display: none;
+  z-index: 1300;
+}
+.startOverlay.show{ display:block; }
+
+.startSheet{
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%) translateY(110%);
+  transition: transform .22s ease;
+  width: min(720px, 100vw);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  z-index: 1301;
+  padding: 14px 16px 18px;
+  box-sizing: border-box;
+  box-shadow: 0 -10px 24px rgba(0,0,0,.12);
+}
+.startSheet.open{ transform: translateX(-50%) translateY(0); }
+
+.startSheetTitle{ font-size: 16px; font-weight: 900; }
+.startSheetSub{ font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+
+.optionGroup label{
+  display:flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  margin: 10px 0;
+  align-items:flex-start;
+  cursor: pointer;
+}
+.optionGroup input{ margin-top: 3px; }
+.optTitle{ font-weight: 900; }
+.optDesc{ font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+.startSheetActions{
+  display:flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.startSheetActions .btn{ flex: 1; }
+
+
+/* ===== Start Options Bottom Sheet (Shuffle 선택) ===== */
+.startOptOverlay{
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(17,24,39,.35);
+  z-index: 2000;
+}
+.startOptOverlay.show{ display:flex; }
+.startOptSheet{
+  width: min(720px, 100vw);
+  background: #ffffff;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border: 1px solid var(--line);
+  box-shadow: 0 -14px 40px rgba(0,0,0,.18);
+  padding: 14px 14px 16px;
+}
+.startOptTitle{
+  font-weight: 900;
+  font-size: 16px;
+  margin: 0 0 10px;
+}
+.startOptSub{
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 0 12px;
+  line-height: 1.45;
+}
+.startOptGroup{
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  background: #ffffff;
+}
+.startOptRow{
+  display:flex;
+  gap: 10px;
+  align-items:flex-start;
+  padding: 10px 8px;
+  border-radius: 12px;
+  cursor:pointer;
+}
+.startOptRow + .startOptRow{ border-top: 1px solid var(--line); }
+.startOptRow:active{ background:#f3f4f6; }
+.startOptLabel{
+  font-weight: 900;
+  font-size: 14px;
+  margin: 0;
+}
+.startOptDesc{
+  color: var(--muted);
+  font-size: 12px;
+  margin: 2px 0 0;
+  line-height: 1.45;
+}
+.startOptActions{
+  display:flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.startOptActions .btn{ flex: 1; }
+.startOptRadio{
+  margin-top: 2px;
+}
+
+
+/* ====== Toast ====== */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.82);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.2;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.toast.show{
+  opacity: 1;
+  transform: translateX(-50%) translateY(-4px);
+}
+
 </style>
 </head>
 
@@ -1194,6 +1338,123 @@ width: 100%;
     const homeBannerEl = document.getElementById("homeBanner");
     const goLastBtn = document.getElementById("goLastBtn");
 
+    // ====== 시작 옵션(셔플) 바텀시트 ======
+    const START_OPT_PREF_KEY_PREFIX = "quiz_start_opt_pref_v1_"; // subjectId별 저장
+    let startOptSubjectId = null;
+    let startOptMode = "start"; // "start" | "restart"
+
+    function loadStartOptPref(subjectId){
+      try{
+        const v = localStorage.getItem(START_OPT_PREF_KEY_PREFIX + subjectId);
+        if (v === "ordered" || v === "shuffle") return v;
+      }catch{}
+      return "shuffle"; // 기본: 셔플
+    }
+    function saveStartOptPref(subjectId, val){
+      try{ localStorage.setItem(START_OPT_PREF_KEY_PREFIX + subjectId, val); }catch{}
+    }
+
+    function setStartOptUI(val){
+      const radios = document.querySelectorAll('input[name="startOptOrder"]');
+      radios.forEach(r => r.checked = (r.value === val));
+    }
+
+    function openStartOptions(subjectId, mode){
+      startOptSubjectId = subjectId;
+      startOptMode = (mode === "restart") ? "restart" : "start";
+      const pref = loadStartOptPref(subjectId);
+      setStartOptUI(pref);
+      const overlay = document.getElementById("startOptOverlay");
+      if (overlay) overlay.classList.add("show");
+    }
+    function closeStartOptions(){
+      const overlay = document.getElementById("startOptOverlay");
+      if (overlay) overlay.classList.remove("show");
+      startOptSubjectId = null;
+      startOptMode = "start";
+    }
+    function getSelectedStartOpt(){
+      const checked = document.querySelector('input[name="startOptOrder"]:checked');
+      return checked ? checked.value : "shuffle";
+    }
+
+    function startWithOptions(subjectId, optVal, freshRestart=false){
+      // optVal: "ordered" | "shuffle"
+      bindSubjectContext(subjectId);
+      setScreen("quiz");
+
+      // ✅ '다시 풀기'는 이전 풀이 흔적(선택/점수/오답복습)을 모두 초기화하고 새 회차로 시작
+      if (freshRestart){
+        const qs = makeDefaultQuizState();
+        qs.order = [...allIds];
+        app.perSubject[subjectId] = qs;
+        state = app.perSubject[subjectId];
+        pendingFinish = false;
+        try{ sessionStorage.removeItem(SHUFFLE_ONCE_KEY_PREFIX + subjectId); }catch{}
+      }
+
+      // ✅ 새 회차 시작이므로 인덱스/뷰 리셋(진행 초기화는 아님)
+      state.view = "main";
+      state.suppressWrongCta = false;
+      pendingFinish = false;
+
+      if (optVal === "ordered"){
+        // 원본 순서 그대로
+        state.order = [...allIds];
+        state.idx = 0;
+
+        // 자동 셔플 1회 플래그 제거(같은 세션에서 다시 들어와도 섞이지 않게)
+        try{ sessionStorage.removeItem(SHUFFLE_ONCE_KEY_PREFIX + subjectId); }catch{}
+      } else {
+        // 기존 로직(이미 푼 문제 앞 고정 + 나머지 셔플)
+        try{ sessionStorage.removeItem(SHUFFLE_ONCE_KEY_PREFIX + subjectId); }catch{}
+        applyLaunchShuffleOnce();
+      }
+
+      saveStartOptPref(subjectId, optVal);
+      saveAppState();
+      render();
+    }
+
+    function initStartOptionsDOM(){
+      const overlay = document.getElementById("startOptOverlay");
+      const cancelBtn = document.getElementById("startOptCancelBtn");
+      const startBtn = document.getElementById("startOptStartBtn");
+      const group = document.getElementById("startOptGroup");
+
+      // 오버레이 클릭 닫기(시트 바깥)
+      if (overlay){
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) closeStartOptions();
+        });
+      }
+      if (cancelBtn) cancelBtn.addEventListener("click", closeStartOptions);
+      if (startBtn) startBtn.addEventListener("click", () => {
+        const opt = getSelectedStartOpt();
+        const subjId = startOptSubjectId || app.currentSubjectId;
+        const isRestart = (startOptMode === "restart");
+        closeStartOptions();
+        startWithOptions(subjId, opt, isRestart);
+      });
+
+      // row 클릭으로 radio 선택
+      if (group){
+        group.addEventListener("click", (e) => {
+          const row = e.target.closest(".startOptRow");
+          if (!row) return;
+          const val = row.getAttribute("data-val");
+          setStartOptUI(val);
+        });
+      }
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initStartOptionsDOM);
+    } else {
+      initStartOptionsDOM();
+    }
+
+
     function getSubjectById(id) {
       return SUBJECTS.find(s => s.id === id);
     }
@@ -1287,8 +1548,31 @@ width: 100%;
 
       // 최근 과목 이어하기 버튼
       const cur = app.currentSubjectId;
+      const qs = app.perSubject[cur];
       const stats = countAnswered(cur);
-      if (stats.answered > 0 && stats.answered < stats.total) {
+
+      let hasProgress = stats.answered > 0;
+
+      // 오답복습 진행 또는 기록이 있는 경우도 이어하기 허용
+      let hasWrongReview = false;
+      if (qs) {
+        const wrongRound = qs.wrongRound || 0;
+        let wrongRemaining = 0;
+        const mastered = qs.wrongMastery || {};
+
+        for (const [idStr, a] of Object.entries(qs.answered || {})) {
+          const id = Number(idStr);
+          if (a && a.isCorrect === false && !mastered[id]) {
+            wrongRemaining += 1;
+          }
+        }
+
+        if (!qs.suppressWrongCta && wrongRound > 0 && wrongRemaining > 0) {
+          hasWrongReview = true;
+        }
+      }
+
+      if (hasProgress || hasWrongReview) {
         goLastBtn.style.display = "inline-flex";
         goLastBtn.textContent = `최근 과목 이어하기 · ${getSubjectById(cur)?.name || cur}`;
         goLastBtn.onclick = () => {
@@ -1300,7 +1584,6 @@ width: 100%;
       } else {
         goLastBtn.style.display = "none";
       }
-
       subjectsList.innerHTML = "";
       SUBJECTS.forEach(subj => {
         // 과목별 state가 없으면 생성(홈에서 바로 눌러도 됨)
@@ -1316,11 +1599,17 @@ width: 100%;
         const cardEl = document.createElement("div");
         cardEl.className = "subjectCard";
         cardEl.onclick = () => {
+        if (qs && qs.view === "wrongReview") return;
+        if (canResume) {
           bindSubjectContext(subj.id);
           setScreen("quiz");
           applyLaunchShuffleOnce();
           render();
-        };
+        } else {
+          const isCompletedCard = (s.total > 0 && s.answered >= s.total);
+          openStartOptions(subj.id, isCompletedCard ? "restart" : "start");
+        }
+      };
 
         const head = document.createElement("div");
         head.className = "subjectHead";
@@ -1405,35 +1694,154 @@ head.appendChild(left);
         const actions = document.createElement("div");
         actions.className = "subjectActions";
 
+        const inWrongReviewHome = (qs && qs.view === "wrongReview");
+        if (inWrongReviewHome) {
+          // ✅ 오답복습 화면에서 홈으로 나온 경우:
+          // - '이어하기' 버튼은 숨기고
+          // - '오답 다시풀기' + '진행 초기화' 버튼만 노출
+          if (!qs.suppressWrongCta && wrongRemaining > 0) {
+            const wrongRetryBtn = document.createElement("button");
+            wrongRetryBtn.className = "btn homeBtn";
+            wrongRetryBtn.textContent = "오답 다시풀기";
+            wrongRetryBtn.onclick = (e) => {
+              e.stopPropagation();
+              bindSubjectContext(subj.id);
+              setScreen("quiz");
+              startWrongReview();
+            };
+            actions.appendChild(wrongRetryBtn);
+          }
+
+          const resetBtn = document.createElement("button");
+          resetBtn.className = "btn secondary homeBtn";
+          resetBtn.textContent = "진행 초기화";
+          resetBtn.onclick = (e) => {
+            e.stopPropagation();
+            const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
+            if (!ok) return;
+            const qs2 = makeDefaultQuizState();
+            qs2.order = (subj.questions || []).map(q => q.id);
+            app.perSubject[subj.id] = qs2;
+            saveAppState();
+            showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
+            renderHome();
+          };
+          actions.appendChild(resetBtn);
+
+        } else {
+
         const startBtn = document.createElement("button");
         startBtn.className = "btn homeBtn";
-        startBtn.textContent = (s.answered > 0 && s.answered < s.total) ? "이어하기" : "시작하기";
+        // ✅ 이어하기 노출 조건:
+// - 진행중(0<answered<total)
+// - (완료 후) 오답복습 재진입이 필요하면 '오답 다시풀기' 버튼을 사용
+// - 오답복습 기록이 있고 남은 오답이 있는 경우(wrongRound>0 && wrongRemaining>0)
+const suppressWrongCta = !!(qs && qs.suppressWrongCta);
+	// ✅ 이어하기 노출 조건:
+	// - 진행중(0<answered<total)
+	// - (완료 후) 오답복습 재진입이 필요하면 "오답 다시풀기" 버튼을 사용
+	// - 단, 오답복습 "종료" 흐름(suppressWrongCta=true)에서는 이어하기로 복귀하지 않음
+	const canResume = (
+	  (s.answered > 0 && s.answered < s.total) ||
+	  (!suppressWrongCta && (wrongRound > 0 && wrongRemaining > 0))
+	);
+// ✅ 버튼 텍스트 정책:
+// - 진행중/오답복습 진행중이면: 이어하기
+// - 완료(전부 풂)이면: 다시 풀기
+// - 미시작이면: 시작하기
+const isCompleted = (s.total > 0 && s.answered >= s.total);
+startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀기" : "시작하기");
         startBtn.onclick = (e) => {
           e.stopPropagation();
-          bindSubjectContext(subj.id);
-          setScreen("quiz");
-          applyLaunchShuffleOnce();
-          render();
+          // ✅ 이어하기는 옵션 없이 즉시 진입(진행 중 순서 변경 방지)
+          if (canResume) {
+            bindSubjectContext(subj.id);
+            setScreen("quiz");
+            applyLaunchShuffleOnce();
+            render();
+            return;
+          }
+          // ✅ 시작하기: 옵션(셔플/기출순서) 선택 후 시작
+          openStartOptions(subj.id, isCompleted ? "restart" : "start");
         };
 
-        const resetBtn = document.createElement("button");
-        resetBtn.className = "btn secondary homeBtn";
-        resetBtn.textContent = "진행 초기화";
-        resetBtn.onclick = (e) => {
-          e.stopPropagation();
-          const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
-          if (!ok) return;
-          // 과목별 초기화
-          const qs = makeDefaultQuizState();
-          qs.order = (subj.questions || []).map(q => q.id);
-          app.perSubject[subj.id] = qs;
-          saveAppState();
-          showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
-          renderHome();
-        };
+        // ✅ 보조 버튼(완료 상태에서는 '오답 다시풀기', 그 외는 '진행 초기화')
+        let secondaryBtn = null;
+
+        if (isCompleted) {
+	          // ✅ 완료 상태 보조 버튼 정책
+	          // - 오답복습 "종료" 흐름(suppressWrongCta=true)에서는: 진행 초기화 노출
+	          // - 일반 완료 상태에서는: 오답이 남아있을 때만 '오답 다시풀기' 노출
+	          // - 오답 0개(100점)이면 '진행 초기화' 노출
+	          if (suppressWrongCta) {
+	            const resetBtn = document.createElement("button");
+	            resetBtn.className = "btn secondary homeBtn";
+	            resetBtn.textContent = "진행 초기화";
+	            resetBtn.onclick = (e) => {
+	              e.stopPropagation();
+	              const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
+	              if (!ok) return;
+	              const qs = makeDefaultQuizState();
+	              qs.order = (subj.questions || []).map(q => q.id);
+	              app.perSubject[subj.id] = qs;
+	              saveAppState();
+	              showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
+	              renderHome();
+	            };
+	            secondaryBtn = resetBtn;
+	          } else if (wrongRemaining > 0) {
+	            const wrongRetryBtn = document.createElement("button");
+	            wrongRetryBtn.className = "btn secondary homeBtn";
+	            wrongRetryBtn.textContent = "오답 다시풀기";
+	            wrongRetryBtn.onclick = (e) => {
+	              e.stopPropagation();
+	              // ✅ 홈에서 바로 오답복습 화면으로 진입
+	              bindSubjectContext(subj.id);
+	              setScreen("quiz");
+	              startWrongReview();
+	            };
+	            secondaryBtn = wrongRetryBtn;
+	          } else {
+	            // ✅ 완료 + 오답 0개(100점): '진행 초기화' 노출
+	            const resetBtn = document.createElement("button");
+	            resetBtn.className = "btn secondary homeBtn";
+	            resetBtn.textContent = "진행 초기화";
+	            resetBtn.onclick = (e) => {
+	              e.stopPropagation();
+	              const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
+	              if (!ok) return;
+	              const qs = makeDefaultQuizState();
+	              qs.order = (subj.questions || []).map(q => q.id);
+	              app.perSubject[subj.id] = qs;
+	              saveAppState();
+	              showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
+	              renderHome();
+	            };
+	            secondaryBtn = resetBtn;
+	          }
+	        } else {
+	          const resetBtn = document.createElement("button");
+          resetBtn.className = "btn secondary homeBtn";
+          resetBtn.textContent = "진행 초기화";
+          resetBtn.onclick = (e) => {
+            e.stopPropagation();
+            const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
+            if (!ok) return;
+            // 과목별 초기화
+            const qs = makeDefaultQuizState();
+            qs.order = (subj.questions || []).map(q => q.id);
+            app.perSubject[subj.id] = qs;
+            saveAppState();
+            showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
+            renderHome();
+          };
+          secondaryBtn = resetBtn;
+        }
 
         actions.appendChild(startBtn);
-        actions.appendChild(resetBtn);
+        if (secondaryBtn) actions.appendChild(secondaryBtn);
+
+        }
 
         cardEl.appendChild(head);
         cardEl.appendChild(bar);
@@ -1505,6 +1913,24 @@ head.appendChild(left);
     function hideBanner() {
       bannerEl.textContent = "";
       bannerEl.classList.remove("show");
+    }
+
+    // ====== 토스트 ======
+    let toastTimer = null;
+    function showToast(msg, ms = 2000) {
+      let el = document.getElementById("toast");
+      if (!el) {
+        el = document.createElement("div");
+        el.id = "toast";
+        el.className = "toast";
+        document.body.appendChild(el);
+      }
+      el.textContent = msg;
+      el.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.remove("show");
+      }, ms);
     }
 
     function getViewOrder() {
@@ -1685,15 +2111,19 @@ head.appendChild(left);
       });
 
       if (remainingWrong.length === 0) {
-        // ✅ 오답 0개면 메인 완료 화면으로
+        // ✅ 오답복습 완료: 완료 화면으로 다시 보내지 않고 홈으로 복귀 + 토스트
         state.view = "main";
-        state.idx = Math.max(0, state.order.length - 1); // 마지막으로 보내면 render()가 완료 화면 조건 충족
         pendingFinish = false;
         state.wrongOrder = [];
         // state.wrongRound는 유지 (완료 후에도 회차 초기화하지 않음)
         state.reviewed = {};
+        state.reviewResults = {};
+        state.suppressWrongCta = false;
         saveAppState();
+        hideBanner();
+        setScreen("home");
         render();
+        showToast("오답복습이 완료됐어요.");
         return;
       }
 
@@ -1766,10 +2196,33 @@ head.appendChild(left);
 
       // 🔴 오답복습 종료 버튼을 하단 네비게이션 우측(빨간 박스 위치)에 배치
       let exitWrongNavBtn = document.getElementById("exitWrongNavBtn");
+      let homeWrongNavBtn = document.getElementById("homeWrongNavBtn");
       if (state.view === "wrongReview") {
         // navBar에 absolute 배치를 위해 상대 위치 설정(오답복습일 때만)
         navBar.style.position = "relative";
-        navBar.style.paddingRight = "140px"; // 우측 버튼 공간 확보
+        navBar.style.paddingRight = "280px"; // 우측 버튼 공간 확보(홈으로 + 종료)
+
+        // 🏠 홈으로(진행 저장) 버튼: 오답복습 진행 상태 유지 + 홈 이동
+        if (!homeWrongNavBtn) {
+          homeWrongNavBtn = document.createElement("button");
+          homeWrongNavBtn.id = "homeWrongNavBtn";
+          homeWrongNavBtn.className = "btn secondary";
+          homeWrongNavBtn.textContent = "홈으로";
+
+          homeWrongNavBtn.style.height = "42px";
+          homeWrongNavBtn.style.padding = "0 14px";
+          homeWrongNavBtn.style.fontSize = "13px";
+          homeWrongNavBtn.style.borderRadius = "12px";
+
+          homeWrongNavBtn.style.position = "absolute";
+          homeWrongNavBtn.style.right = "112px";
+          homeWrongNavBtn.style.top = "50%";
+          homeWrongNavBtn.style.transform = "translateY(-50%)";
+
+          homeWrongNavBtn.onclick = goHomeFromWrongReviewKeep;
+
+          navBar.appendChild(homeWrongNavBtn);
+        }
 
         if (!exitWrongNavBtn) {
           exitWrongNavBtn = document.createElement("button");
@@ -1794,6 +2247,7 @@ head.appendChild(left);
         }
       } else {
         if (exitWrongNavBtn) exitWrongNavBtn.remove();
+        if (homeWrongNavBtn) homeWrongNavBtn.remove();
         // 다른 화면에는 영향 없도록 원복
         navBar.style.position = "";
         navBar.style.paddingRight = "";
@@ -2067,17 +2521,35 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
     }
     // ✅ 오답복습 종료(루프 탈출)
     function exitWrongReview() {
+      // ✅ 오답복습 종료 확인
+      const ok = window.confirm("오답복습을 종료하시겠습니까?\n남아있는 오답은 저장되지 않고 초기화됩니다.");
+      if (!ok) return;
+
       pendingFinish = false;
 
-      // 오답복습 상태 초기화
+      // ✅ 이번 오답복습 라운드에서의 진행/해결(마스터리)도 저장하지 않음
+      try {
+        const rr = state.reviewResults || {};
+        if (state.wrongMastery && rr) {
+          for (const [idStr, r] of Object.entries(rr)) {
+            if (r && r.isCorrect === true) {
+              delete state.wrongMastery[Number(idStr)];
+            }
+          }
+        }
+      } catch {}
+
+      // ✅ 홈 카드에서 '오답 다시풀기' CTA를 숨기고(종료 흐름), 완료 카드처럼 보이게
+      state.suppressWrongCta = true;
+
+      // ✅ 오답복습 상태 초기화(남은 오답/진행은 저장하지 않음)
       state.view = "main";
       state.wrongOrder = [];
       state.reviewed = {};
-      state.reviewResults = {}; // ✅ 추가
+      state.reviewResults = {};
 
-      // 완료 화면으로 복귀(오답복습은 완료 화면에서만 시작됨)
-      state.idx = Math.max(0, state.order.length - 1);
-
+      // 홈으로 이동
+      setScreen("home");
       saveAppState();
       hideBanner();
       render();
@@ -2085,9 +2557,25 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
 
 
 
+
+
     // ✅ 완료 화면에서만 진입하는 오답 풀이(3안: 라운드 시작)
-    function startWrongReview() {
+    
+    // ✅ 오답복습 중 홈으로(진행 저장): 현재 오답복습 진행 상태를 유지한 채 홈으로 이동
+    function goHomeFromWrongReviewKeep() {
       pendingFinish = false;
+      // '오답복습 종료' 흐름이 아니라면 CTA 억제 플래그는 끄지 않음
+      state.suppressWrongCta = false;
+
+      setScreen("home");
+      saveAppState();
+      hideBanner();
+      render();
+    }
+
+function startWrongReview() {
+      pendingFinish = false;
+      state.suppressWrongCta = false;
 
       const wrongAll = getWrongIdsFromAnswered();
       const mastered = state.wrongMastery || {};
@@ -2111,6 +2599,7 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
       showBanner(`오답 복습 ${round}회차 시작! (${wrongNow.length}문제, 셔플됨)`);
       render();
 }
+
 
     // ====== 이벤트 ======
     nextBtn.onclick = () => goNext(true);
@@ -2157,14 +2646,13 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
     }, { passive: true });
 
     // PWA Service Worker 등록
-    if ("serviceWorker" in navigator) {
+    // ⚠️ file:// 로 직접 열면 origin이 null이라 SW 등록이 실패합니다.
+    // GitHub Pages / HTTPS 환경에서만 등록하도록 가드합니다.
+    if ("serviceWorker" in navigator && (location.protocol === "http:" || location.protocol === "https:")) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js");
       });
-    }
-
-    
-    // ====== AI에게 물어보세요 (로컬 서버) ======
+    }// ====== AI에게 물어보세요 (로컬 서버) ======
 
     const AI_SERVER_BASE = "https://quiz-t8vd.onrender.com";
 
@@ -3281,5 +3769,35 @@ if (aiCloseBtn) aiCloseBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagat
     if (app.screen === "quiz") applyLaunchShuffleOnce();
     render();
   </script>
+  <!-- ===== 시작 옵션 바텀시트 (셔플 선택) ===== -->
+  <div class="startOptOverlay" id="startOptOverlay" role="dialog" aria-modal="true" aria-label="문제 풀이 방식 선택">
+    <div class="startOptSheet">
+      <p class="startOptTitle">문제 풀이 방식 선택</p>
+      <p class="startOptSub">이번 회차에서만 적용됩니다. 이어하기에는 적용되지 않습니다.</p>
+
+      <div class="startOptGroup" id="startOptGroup">
+        <div class="startOptRow" data-val="ordered">
+          <input class="startOptRadio" type="radio" name="startOptOrder" value="ordered" />
+          <div>
+            <p class="startOptLabel">기출 순서대로 풀기</p>
+            <p class="startOptDesc">연도·번호 순서 그대로 풉니다.</p>
+          </div>
+        </div>
+        <div class="startOptRow" data-val="shuffle">
+          <input class="startOptRadio" type="radio" name="startOptOrder" value="shuffle" />
+          <div>
+            <p class="startOptLabel">무작위로 섞어서 풀기</p>
+            <p class="startOptDesc">실전 대비용으로 문제 순서를 섞습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="startOptActions">
+        <button class="btn secondary" id="startOptCancelBtn" type="button">취소</button>
+        <button class="btn" id="startOptStartBtn" type="button">이 설정으로 시작</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
