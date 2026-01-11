@@ -932,10 +932,10 @@ width: 100%;
             <!-- preset 질문 칩 (1줄 가로 스크롤) -->
           <div class="aiPresetsWrap" id="aiPresetsWrap">
           <div class="aiPresets" id="aiPresets">
-                      <button class="aiChip" data-preset="summary" type="button">핵심요약 <span class="chipTok">≈0</span></button>
-                      <button class="aiChip" data-preset="whyWrong" type="button">왜 틀렸나? <span class="chipTok">≈0</span></button>
-                      <button class="aiChip" data-preset="trap" type="button">함정포인트 <span class="chipTok">≈0</span></button>
-                      <button class="aiChip" data-preset="exam" type="button">시험에 나오면 <span class="chipTok">≈0</span></button>
+                      <button class="aiChip" data-preset="solution" type="button">전체 풀이를 알려줘. <span class="chipTok">≈0</span></button>
+                      <button class="aiChip" data-preset="summary" type="button">핵심 포인트를 알려줘. <span class="chipTok">≈0</span></button>
+                      <button class="aiChip" data-preset="trap" type="button">이 문제의 함정은? <span class="chipTok">≈0</span></button>
+                      <button class="aiChip" data-preset="exam" type="button">변형문제가 어떻게 나올까? <span class="chipTok">≈0</span></button>
                     </div>
         </div>
 
@@ -3136,10 +3136,10 @@ if (aiCloseBtn) aiCloseBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagat
 
 // preset 질문
       const PRESET_MAP = {
-        summary: "이 문제의 핵심 포인트를 3줄로 요약하고, 오답 함정 포인트도 알려줘.",
-        whyWrong: "내가 헷갈리는 보기를 하나씩 반박해줘. 특히 왜 오답인지 논리로 설명해줘.",
-        trap: "이 문제의 오답 함정 포인트(자주 속는 표현/키워드)를 정리해줘. 한 줄 팁도.",
-        exam: "시험에서 비슷하게 나오면 어떤 식으로 변형되는지 3가지 예시로 알려줘."
+        solution: "이 문제의 전체 풀이를 알려줘.",
+        summary: "이 문제의 핵심 포인트를 3줄로 요약해줘.",
+        trap: "이 문제의 오답 함정 포인트(자주 속는 표현/키워드)를 정리해줘.",
+        exam: "이 문제가 시험에서 비슷하게 나오면 어떤 식으로 변형되는지 알려줘."
       };
 
       function aiUpdatePresetTokenBadges(){
