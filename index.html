@@ -79,6 +79,15 @@
     .swipeIn { transform: translateX(0); opacity: 1; }
 
     /* 완료 화면 */
+    .doneTopMsg{
+      font-size:14px;
+      font-weight:900;
+      color:#111827;
+      padding:0;
+      background:transparent;
+      border-radius:0;
+    }
+
     .doneBox {
       margin-top: 8px;
       padding: 14px;
@@ -108,6 +117,7 @@
     .homeTitle { font-size: 22px; font-weight: 900; margin: 0 0 6px; }
     .homeSub { color: var(--muted); font-size: 13px; margin: 0 0 14px; line-height: 1.5; }
     .subjectGrid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .subjectGrid{ align-items: start; }
     @media (min-width: 520px) { .subjectGrid { grid-template-columns: 1fr 1fr; } }
 
     .subjectCard {
@@ -122,6 +132,15 @@
       cursor: pointer;
     }
     .subjectHead { display:flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+
+    /* 홈 카드 상단 레이아웃: chip이 많아져도 제목/설명이 세로로 쪼개지지 않게 */
+    .subjectHead{ flex-wrap: wrap; align-items: flex-start; }
+    .subjectLeft{ flex: 1 1 260px; min-width: 220px; }
+    .subjectName, .subjectDesc{ word-break: keep-all; overflow-wrap: break-word; }
+    .subjectMeta{ margin-left: auto; justify-content: flex-end; }
+    @media (max-width: 420px){
+      .subjectMeta{ width: 100%; margin-left: 0; justify-content: flex-start; }
+    }
     .subjectName { font-size: 16px; font-weight: 900; margin: 0; }
     .subjectDesc { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
     .subjectMeta { display:flex; gap: 8px; flex-wrap: wrap; align-items:center; }
@@ -831,7 +850,7 @@ width: 100%;
             <button class="btn secondary" id="goLastBtn" style="display:none;">최근 과목 이어하기</button>
           </div>
 
-          <h1 class="homeTitle">오늘 풀 문제를 선택하세용용</h1>
+          <h1 class="homeTitle">오늘 풀 문제를 선택하세요</h1>
           <p class="homeSub">
             과목을 추가해도 UX가 깨지지 않도록, 과목별로 진행률/점수를 따로 저장합니다.<br>
             • 과목 카드 → 시작/이어하기 • 완료 후 오답복습
@@ -1031,8 +1050,17 @@ width: 100%;
       idx: 0,
       view: "main",      // "main" | "wrongReview"
       order: [],         // 과목별 문제 id 순서
-      answered: {},      // { [id]: { selected, isCorrect, at } }
+      answered: {},      // (시험 결과) { [id]: { selected, isCorrect, at } }
       reviewed: {},      // 오답복습에서 이번 세션 선택 여부
+
+      // ✅ (추가) 오답복습 결과는 시험 결과와 분리 저장
+      reviewResults: {}, // { [id]: { selected, isCorrect, at } }
+
+      // ✅ (추가) 완료(시험) 점수 스냅샷: 오답복습으로 변동되지 않게 고정
+      finalSnapshot: null, // { correct, wrong, total, percent, at }
+
+      // ✅ (추가) 오답복습에서 맞힌 문제를 기억 (다음 오답복습에서 제외)
+      wrongMastery: {}, // { [id]: true }
 
       wrongOrder: [],
       wrongRound: 0
@@ -1229,6 +1257,7 @@ width: 100%;
     }
 
     function renderHome() {
+      if (progressEl) { progressEl.style.display = "inline-flex"; progressEl.style.visibility = "hidden"; progressEl.style.pointerEvents = "none"; }
       stopTimer();
       if (timerPill) { timerPill.style.display = 'none'; timerPill.classList.remove('warn'); }
       homeSection.style.display = "block";
@@ -1277,6 +1306,7 @@ width: 100%;
         head.className = "subjectHead";
 
         const left = document.createElement("div");
+        left.className = "subjectLeft";
         left.style.flex = "1";
 
         const name = document.createElement("p");
@@ -1295,16 +1325,54 @@ width: 100%;
 
         const chip1 = document.createElement("span");
         chip1.className = "chip";
-        chip1.textContent = `진행 ${s.answered}/${s.total}`;
-
-        const chip2 = document.createElement("span");
-        chip2.className = "chip gray";
-        chip2.textContent = (percent === null) ? "점수 -점" : `점수 ${percent}점`;
+        chip1.textContent = (s.total > 0 && s.answered === s.total)
+          ? `완료 ${s.answered}/${s.total}`
+          : `진행 ${s.answered}/${s.total}`;
 
         meta.appendChild(chip1);
-        meta.appendChild(chip2);
 
-        head.appendChild(left);
+        let chipWR = null;
+
+        // ✅ 오답복습 n회차 표시는 "점수"와 별도로 추가 노출
+        // - 오답복습 종료로 홈에 와도 유지
+        // - 단, 남은 오답이 0개면 표시하지 않음
+        const qs = app.perSubject[subj.id] || {};
+        const wrongRound = (typeof qs.wrongRound === "number") ? qs.wrongRound : 0;
+
+        let wrongRemaining = 0;
+        if (qs && qs.answered) {
+          const mastered = qs.wrongMastery || {};
+          for (const [idStr, a] of Object.entries(qs.answered)) {
+            const id = Number(idStr);
+            if (a && a.isCorrect === false && !mastered[id]) wrongRemaining += 1;
+          }
+        }
+
+        if (wrongRound > 0 && wrongRemaining > 0) {
+          chipWR = document.createElement("span");
+          chipWR.className = "chip gray";
+          chipWR.textContent = `오답복습 ${wrongRound}회차`;
+        }
+
+        // ✅ 점수: 진행 중(0<answered<total)에는 숨김, 미시작(answered=0)은 '-점' 유지, 완료 시 표시
+        if (s.answered === 0) {
+          const chip2 = document.createElement("span");
+          chip2.className = "chip gray";
+          chip2.textContent = "점수 -점";
+          meta.appendChild(chip2);
+        } else if (s.total > 0 && s.answered >= s.total) {
+          const chip2 = document.createElement("span");
+          chip2.className = "chip gray";
+          chip2.textContent = (percent === null) ? "점수 -점" : `점수 ${percent}점`;
+          meta.appendChild(chip2);
+        } else {
+          // 진행 중: 점수 숨김
+        }
+
+        // ✅ 칩 순서: 완료/진행 → 점수 → 오답복습
+        if (chipWR) meta.appendChild(chipWR);
+
+head.appendChild(left);
         head.appendChild(meta);
 
         const bar = document.createElement("div");
@@ -1504,23 +1572,45 @@ width: 100%;
     function renderDoneScreen() {
       stopTimer();
       if (timerPill) { timerPill.style.display = 'none'; timerPill.classList.remove('warn'); }
-      const counts = computeCounts();
-      const total = allIds.length;
-      const percent = Math.round((counts.correct / total) * 100);
-      progressEl.textContent = `${allIds.length}/${allIds.length}`;
+
+      // ✅ 최종 점수 스냅샷: 시험 결과를 고정 (오답복습으로 변동 금지)
+      if (!state.finalSnapshot) {
+        const counts0 = computeCounts();
+        const total0 = allIds.length;
+        state.finalSnapshot = {
+          correct: counts0.correct,
+          wrong: counts0.wrong,
+          total: total0,
+          percent: Math.round((counts0.correct / total0) * 100),
+          at: Date.now()
+        };
+        saveAppState();
+      }
+
+      const snap = state.finalSnapshot;
+      const counts = { correct: snap.correct, wrong: snap.wrong };
+      const total = snap.total;
+      const percent = snap.percent;
+      // ✅ 완료 화면: 진행률(progress) 대신 메시지를 좌측에 배치하고, progress UI는 완전히 제거
+      if (progressEl) {
+          progressEl.style.visibility = "hidden";
+          progressEl.style.pointerEvents = "none";
+
+      }
       if (scoreEl) scoreEl.textContent = `정답 ${counts.correct}`;
       if (wrongCountEl) wrongCountEl.textContent = `오답 ${counts.wrong}`;
 
       hideBanner();
       pendingFinish = false;
 
-      // ✅ 오답복습 라운드 상태 초기화
+      // ✅ 오답복습 라운드 상태 정리 (회차는 유지)
       state.wrongOrder = [];
-      state.wrongRound = 0;
+      // state.wrongRound는 유지 (재진입 시 회차 초기화 방지)
       state.reviewed = {};
+      state.reviewResults = {};
       saveAppState();
 
-      qText.textContent = "모든 문제를 다 풀었습니다 ✅";
+     
       choicesEl.innerHTML = `
         <div class="doneBox">
           <p class="doneTitle">결과</p>
@@ -1555,8 +1645,9 @@ width: 100%;
       btnReset.onclick = onClickReset;
       actionRow.appendChild(btnReset);
 
-      const wrongCount = counts.wrong;
-      if (wrongCount > 0) {
+      const mastered = state.wrongMastery || {};
+      const wrongRemainingCount = getWrongIdsFromAnswered().filter(id => !mastered[id]).length;
+      if (wrongRemainingCount > 0) {
         const btnWrong = document.createElement("button");
         btnWrong.className = "btn tertiary small";
         btnWrong.textContent = "오답만 풀기";
@@ -1569,8 +1660,8 @@ width: 100%;
     function finishWrongRound() {
       // 이번 라운드에서 틀린 문제만 모으기(여전히 isCorrect=false인 것)
       const remainingWrong = (state.wrongOrder || []).filter(id => {
-        const a = state.answered[id];
-        return a && a.isCorrect === false;
+        const rr = state.reviewResults && state.reviewResults[id];
+        return !rr || rr.isCorrect === false;
       });
 
       if (remainingWrong.length === 0) {
@@ -1579,8 +1670,8 @@ width: 100%;
         state.idx = Math.max(0, state.order.length - 1); // 마지막으로 보내면 render()가 완료 화면 조건 충족
         pendingFinish = false;
         state.wrongOrder = [];
-        state.wrongRound = 0;
-      state.reviewed = {};
+        // state.wrongRound는 유지 (완료 후에도 회차 초기화하지 않음)
+        state.reviewed = {};
         saveAppState();
         render();
         return;
@@ -1591,6 +1682,7 @@ width: 100%;
       state.wrongOrder = fisherYatesShuffle(remainingWrong);
       state.idx = 0;
       state.reviewed = {};
+      state.reviewResults = {}; // ✅ 추가
       saveAppState();
 
       showBanner(`오답 복습 ${state.wrongRound - 1}회차 완료! 틀린 문제 ${remainingWrong.length}개를 다시 섞어서 한 번 더 풀어요.`);
@@ -1611,6 +1703,14 @@ width: 100%;
       bindSubjectContext(app.currentSubjectId);
 
       if (timerPill) { timerPill.style.display = ''; }
+      // ✅ 퀴즈 화면에서는 진행률 표시 노출
+      if (progressEl) {
+        progressEl.style.display = "inline-flex";
+        progressEl.style.visibility = "";
+        progressEl.style.pointerEvents = "";
+        progressEl.classList.add("pill");
+        progressEl.classList.remove("doneTopMsg");
+      }
 
       const counts = computeCounts();
       const total = allIds.length;
@@ -1744,7 +1844,9 @@ width: 100%;
       });
 
       // 메인 화면에서는 풀었던 문제 복원 / 오답 풀이에서는 복원하지 않음
-      const prevAnswer = state.answered[q.id];
+      const prevAnswer = (state.view === "wrongReview")
+        ? (state.reviewResults && state.reviewResults[q.id])
+        : state.answered[q.id];
       if (prevAnswer && !shouldHidePreviousSelectionInWrongReview()) {
         locked = true;
         selected = prevAnswer.selected;
@@ -1799,11 +1901,20 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
 ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
       explainEl.classList.add("show");
 
-      // ✅ 답 저장(오답복습에서도 갱신)
-      state.answered[q.id] = { selected, isCorrect, at: Date.now() };
-      // ✅ 오답복습에서는 "이번 세션에 선택했는지" 기록(이게 있어야 다음으로 이동 가능)
-      if (state.view === "wrongReview") state.reviewed[currentId] = true;
+      if (state.view === "wrongReview") {
+        // ✅ 오답복습: 시험 결과(answered) 절대 수정 금지
+        state.reviewResults[q.id] = { selected, isCorrect, at: Date.now() };
+        if (isCorrect) {
+          if (!state.wrongMastery) state.wrongMastery = {};
+          state.wrongMastery[q.id] = true;
+        }
+        state.reviewed[currentId] = true; // 다음 이동 가능 플래그
+      } else {
+        // ✅ 메인(시험): 시험 결과만 기록
+        state.answered[q.id] = { selected, isCorrect, at: Date.now() };
+      }
       saveAppState();
+
 
       const counts = computeCounts();
       const total = allIds.length;
@@ -1941,8 +2052,8 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
       // 오답복습 상태 초기화
       state.view = "main";
       state.wrongOrder = [];
-      state.wrongRound = 0;
       state.reviewed = {};
+      state.reviewResults = {}; // ✅ 추가
 
       // 완료 화면으로 복귀(오답복습은 완료 화면에서만 시작됨)
       state.idx = Math.max(0, state.order.length - 1);
@@ -1958,22 +2069,28 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
     function startWrongReview() {
       pendingFinish = false;
 
-      const wrongNow = getWrongIdsFromAnswered();
+      const wrongAll = getWrongIdsFromAnswered();
+      const mastered = state.wrongMastery || {};
+      const wrongNow = wrongAll.filter(id => !mastered[id]);
       if (wrongNow.length === 0) {
-        showBanner("현재 오답이 없습니다.");
+        showBanner("남아있는 오답이 없습니다. (오답복습에서 이미 해결했을 수 있어요)");
         return;
       }
 
       state.view = "wrongReview";
       state.idx = 0;
-      state.wrongRound = 1;
+
+      // ✅ 오답복습 회차는 유지: 첫 진입만 1회차로 설정
+      const round = (typeof state.wrongRound === "number" && state.wrongRound > 0) ? state.wrongRound : 1;
+      state.wrongRound = round;
+
       state.wrongOrder = fisherYatesShuffle(wrongNow);
       state.reviewed = {};
 
       saveAppState();
-      showBanner(`오답 복습 1회차 시작! (${wrongNow.length}문제, 셔플됨)`);
+      showBanner(`오답 복습 ${round}회차 시작! (${wrongNow.length}문제, 셔플됨)`);
       render();
-    }
+}
 
     // ====== 이벤트 ======
     nextBtn.onclick = () => goNext(true);
