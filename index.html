@@ -837,6 +837,25 @@ width: 100%;
 /* =============================================================== */
 
 
+
+/* ====== AI Overlay Lock (block outside interactions while AI panel open) ====== */
+#aiBlockOverlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0); /* no dim, interaction blocker only */
+  z-index: 1198; /* just below aiPanel (1199) */
+  display: none;
+  pointer-events: auto;
+}
+#aiBlockOverlay.show{ display:block; }
+
+/* prevent background scroll/gestures while AI is open */
+body.aiLock{
+  overflow: hidden;
+  touch-action: none;
+}
+/* ========================================================================== */
+
 /* Start options sheet */
 .startOverlay{
   position: fixed; inset: 0;
@@ -978,6 +997,82 @@ width: 100%;
 .toast.show{
   opacity: 1;
   transform: translateX(-50%) translateY(-4px);
+}
+
+
+/* ===== 선택지 미니 배지 (정답/오답) ===== */
+.choiceBtn{
+  position: relative; /* 배지 absolute 기준 */
+  overflow: visible;
+}
+
+/* choiceBadge fallback */
+.choice{
+  position: relative;
+  overflow: visible;
+}
+
+.choiceBadge{
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 7px 10px;
+  border-radius: 999px;
+
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(17,24,39,.12);
+  box-shadow: 0 10px 22px rgba(0,0,0,.10);
+
+  pointer-events: none;
+  user-select: none;
+
+  opacity: 0;
+  transform: translateY(8px) scale(.96);
+  animation: choiceBadgePop 900ms ease forwards;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.choiceBadge.ok{
+  color: #166534;
+  border-color: rgba(34,197,94,.30);
+}
+.choiceBadge.no{
+  color: #991b1b;
+  border-color: rgba(239,68,68,.30);
+}
+
+.choiceBadge .mark{
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.choiceBadge.ok .mark{
+  background: rgba(34,197,94,.14);
+}
+.choiceBadge.no .mark{
+  background: rgba(239,68,68,.14);
+}
+
+@keyframes choiceBadgePop{
+  0%   { opacity: 0; transform: translateY(10px) scale(.95); }
+  18%  { opacity: 1; transform: translateY(0px) scale(1.02); }
+  55%  { opacity: 1; transform: translateY(-6px) scale(1.00); }
+  100% { opacity: 0; transform: translateY(-14px) scale(.98); }
 }
 
 </style>
@@ -1226,6 +1321,9 @@ width: 100%;
       // ✅ (추가) 오답복습에서 맞힌 문제를 기억 (다음 오답복습에서 제외)
       wrongMastery: {}, // { [id]: true }
 
+      // ✅ (추가) 해설 표시 옵션: "hide" | "show"
+      explainVisibility: "show",
+
       wrongOrder: [],
       wrongRound: 0
     });
@@ -1339,7 +1437,8 @@ width: 100%;
     const goLastBtn = document.getElementById("goLastBtn");
 
     // ====== 시작 옵션(셔플) 바텀시트 ======
-    const START_OPT_PREF_KEY_PREFIX = "quiz_start_opt_pref_v1_"; // subjectId별 저장
+    const START_OPT_PREF_KEY_PREFIX = "quiz_start_opt_pref_v1_"; // subjectId별 저장(문제 순서)
+    const START_OPT_EXPL_PREF_KEY_PREFIX = "quiz_start_opt_expl_pref_v1_"; // subjectId별 저장(해설 표시)
     let startOptSubjectId = null;
     let startOptMode = "start"; // "start" | "restart"
 
@@ -1354,6 +1453,23 @@ width: 100%;
       try{ localStorage.setItem(START_OPT_PREF_KEY_PREFIX + subjectId, val); }catch{}
     }
 
+
+    function loadStartOptExplPref(subjectId){
+      try{
+        const v = localStorage.getItem(START_OPT_EXPL_PREF_KEY_PREFIX + subjectId);
+        if (v === "hide" || v === "show") return v;
+      }catch{}
+      return "show"; // 기본: 보이기(현재 동작 유지)
+    }
+    function saveStartOptExplPref(subjectId, val){
+      try{ localStorage.setItem(START_OPT_EXPL_PREF_KEY_PREFIX + subjectId, val); }catch{}
+    }
+
+    function setStartOptExplUI(val){
+      const radios = document.querySelectorAll('input[name="startOptExpl"]');
+      radios.forEach(r => r.checked = (r.value === val));
+    }
+
     function setStartOptUI(val){
       const radios = document.querySelectorAll('input[name="startOptOrder"]');
       radios.forEach(r => r.checked = (r.value === val));
@@ -1362,8 +1478,10 @@ width: 100%;
     function openStartOptions(subjectId, mode){
       startOptSubjectId = subjectId;
       startOptMode = (mode === "restart") ? "restart" : "start";
-      const pref = loadStartOptPref(subjectId);
-      setStartOptUI(pref);
+      const prefOrder = loadStartOptPref(subjectId);
+      const prefExpl = loadStartOptExplPref(subjectId);
+      setStartOptUI(prefOrder);
+      setStartOptExplUI(prefExpl);
       const overlay = document.getElementById("startOptOverlay");
       if (overlay) overlay.classList.add("show");
     }
@@ -1378,7 +1496,12 @@ width: 100%;
       return checked ? checked.value : "shuffle";
     }
 
-    function startWithOptions(subjectId, optVal, freshRestart=false){
+    function getSelectedStartOptExpl(){
+      const checked = document.querySelector('input[name="startOptExpl"]:checked');
+      return checked ? checked.value : "show";
+    }
+
+    function startWithOptions(subjectId, optVal, explVal, freshRestart=false){
       // optVal: "ordered" | "shuffle"
       bindSubjectContext(subjectId);
       setScreen("quiz");
@@ -1398,6 +1521,9 @@ width: 100%;
       state.suppressWrongCta = false;
       pendingFinish = false;
 
+      // ✅ 해설 표시 옵션 적용(이번 회차)
+      state.explainVisibility = (explVal === "hide") ? "hide" : "show";
+
       if (optVal === "ordered"){
         // 원본 순서 그대로
         state.order = [...allIds];
@@ -1412,6 +1538,7 @@ width: 100%;
       }
 
       saveStartOptPref(subjectId, optVal);
+      saveStartOptExplPref(subjectId, state.explainVisibility);
       saveAppState();
       render();
     }
@@ -1431,10 +1558,11 @@ width: 100%;
       if (cancelBtn) cancelBtn.addEventListener("click", closeStartOptions);
       if (startBtn) startBtn.addEventListener("click", () => {
         const opt = getSelectedStartOpt();
+        const expl = getSelectedStartOptExpl();
         const subjId = startOptSubjectId || app.currentSubjectId;
         const isRestart = (startOptMode === "restart");
         closeStartOptions();
-        startWithOptions(subjId, opt, isRestart);
+        startWithOptions(subjId, opt, expl, isRestart);
       });
 
       // row 클릭으로 radio 선택
@@ -1443,7 +1571,9 @@ width: 100%;
           const row = e.target.closest(".startOptRow");
           if (!row) return;
           const val = row.getAttribute("data-val");
-          setStartOptUI(val);
+          const typ = row.getAttribute("data-type") || "order";
+          if (typ === "explain") setStartOptExplUI(val);
+          else setStartOptUI(val);
         });
       }
     }
@@ -1932,6 +2062,40 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
         el.classList.remove("show");
       }, ms);
     }
+    // ===== 선택지 미니 배지 (정답/오답) =====
+    function showChoiceBadge(choiceBtn, isCorrect){
+      try{
+        if (!choiceBtn) return;
+
+        // 기존 배지 있으면 제거(중복 방지)
+        const old = choiceBtn.querySelector(".choiceBadge");
+        if (old) old.remove();
+
+        const badge = document.createElement("div");
+        badge.className = "choiceBadge " + (isCorrect ? "ok" : "no");
+
+        const mark = document.createElement("span");
+        mark.className = "mark";
+        mark.textContent = isCorrect ? "✓" : "✕";
+
+        const txt = document.createElement("span");
+        txt.className = "txt";
+        txt.textContent = isCorrect ? "정답" : "오답";
+
+        badge.appendChild(mark);
+        badge.appendChild(txt);
+        choiceBtn.appendChild(badge);
+
+        // 애니메이션 종료 후 제거
+        badge.addEventListener("animationend", () => {
+          try { badge.remove(); } catch {}
+        }, { once:true });
+
+        // 안전장치(혹시 animationend 누락 시)
+        setTimeout(() => { try { badge.remove(); } catch {} }, 1200);
+      } catch {}
+    }
+
 
     function getViewOrder() {
       if (state.view === "wrongReview") {
@@ -2330,17 +2494,10 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
         buttons[correct].classList.add("correct");
         if (selected !== correct) buttons[selected].classList.add("wrong");
 
-        if (prevAnswer.isCorrect) {
-          resultEl.textContent = "✅ 맞았습니다.";
-          resultEl.classList.add("ok");
-        } else {
-          resultEl.textContent = "❌ 틀렸습니다.";
-          resultEl.classList.add("no");
-        }
 
         explainEl.innerHTML = `해설)
 ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
-        explainEl.classList.add("show");
+        if ((state.explainVisibility || "show") === "show") explainEl.classList.add("show");
       }
     }
 
@@ -2363,17 +2520,14 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
 
       const isCorrect = (selected === correct);
 
-      if (isCorrect) {
-        resultEl.textContent = "✅ 맞았습니다.";
-        resultEl.classList.add("ok");
-      } else {
-        resultEl.textContent = "❌ 틀렸습니다.";
-        resultEl.classList.add("no");
-      }
 
-      explainEl.innerHTML = `해설)
+
+      
+      // ✅ 선택한 보기 위에 미니 배지(튀어나왔다 사라짐)
+      showChoiceBadge(buttons[selected], isCorrect);
+explainEl.innerHTML = `해설)
 ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
-      explainEl.classList.add("show");
+      if ((state.explainVisibility || "show") === "show") explainEl.classList.add("show");
 
       if (state.view === "wrongReview") {
         // ✅ 오답복습: 시험 결과(answered) 절대 수정 금지
@@ -3510,7 +3664,21 @@ if (aiPrompt){
         aiGrabber.addEventListener("lostpointercapture", onGrabberUp, { passive:false });
       }
 
-      function aiOpenPanel(){
+      
+      // ===== AI outside-interaction lock helpers =====
+      function lockOutsideUI(){
+        document.body.classList.add("aiLock");
+        const ov = document.getElementById("aiBlockOverlay");
+        if (ov) ov.classList.add("show");
+      }
+      function unlockOutsideUI(){
+        document.body.classList.remove("aiLock");
+        const ov = document.getElementById("aiBlockOverlay");
+        if (ov) ov.classList.remove("show");
+      }
+      // =============================================
+
+function aiOpenPanel(){
         if (!aiBox) return;
 
         // ✅ 패널이 열리면 FAB는 숨김
@@ -3520,6 +3688,7 @@ if (aiPrompt){
         aiApplyPanelVh(aiLoadPanelVh() ?? AI_DEFAULT_VH, false);
 
         aiBox.style.display = "flex";
+        lockOutsideUI();
         if (aiDockSlot) aiDockSlot.style.display = "block";
         requestAnimationFrame(() => {
           aiBox.classList.add("open");
@@ -3542,6 +3711,7 @@ if (aiPrompt){
 
         const done = () => {
           aiBox.style.display = "none"; // ✅ 닫기: display:none
+          unlockOutsideUI();
           if (aiDockSlot) aiDockSlot.style.display = "none";
           // ✅ 퀴즈 화면이면 FAB 다시 노출
           if (aiFab && app && app.screen === "quiz") aiFab.style.display = "inline-flex";
@@ -3553,6 +3723,7 @@ if (aiPrompt){
         setTimeout(() => {
           if (!aiBox.classList.contains("open")) {
             aiBox.style.display = "none";
+            unlockOutsideUI();
             if (aiDockSlot) aiDockSlot.style.display = "none";
             if (aiFab && app && app.screen === "quiz") aiFab.style.display = "inline-flex";
           }
@@ -3663,8 +3834,10 @@ if (aiCloseBtn) aiCloseBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagat
           if (aiFab) aiFab.style.display = "none";
           aiClosePanel();
           aiBox.style.display = "none";
+          unlockOutsideUI();
         } else {
           aiBox.style.display = "none";
+          unlockOutsideUI();
           if (aiFab) aiFab.style.display = "inline-flex";
           aiPing();
           aiRefreshContext();
@@ -3676,9 +3849,11 @@ if (aiCloseBtn) aiCloseBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagat
       // 초기 상태
       if (app.screen === "quiz") {
         aiBox.style.display = "none";
+        unlockOutsideUI();
         if (aiFab) aiFab.style.display = "inline-flex";
       } else {
         aiBox.style.display = "none";
+        unlockOutsideUI();
         if (aiFab) aiFab.style.display = "none";
       }
 
@@ -3776,18 +3951,37 @@ if (aiCloseBtn) aiCloseBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagat
       <p class="startOptSub">이번 회차에서만 적용됩니다. 이어하기에는 적용되지 않습니다.</p>
 
       <div class="startOptGroup" id="startOptGroup">
-        <div class="startOptRow" data-val="ordered">
+        <div class="startOptRow" data-type="order" data-val="ordered">
           <input class="startOptRadio" type="radio" name="startOptOrder" value="ordered" />
           <div>
             <p class="startOptLabel">기출 순서대로 풀기</p>
             <p class="startOptDesc">연도·번호 순서 그대로 풉니다.</p>
           </div>
         </div>
-        <div class="startOptRow" data-val="shuffle">
+        <div class="startOptRow" data-type="order" data-val="shuffle">
           <input class="startOptRadio" type="radio" name="startOptOrder" value="shuffle" />
           <div>
             <p class="startOptLabel">무작위로 섞어서 풀기</p>
             <p class="startOptDesc">실전 대비용으로 문제 순서를 섞습니다.</p>
+          </div>
+        </div>
+      </div>
+
+
+      <p class="startOptSub" style="margin-top:12px;">해설 표시</p>
+      <div class="startOptGroup" id="startOptExplGroup" aria-label="해설 표시 옵션">
+        <div class="startOptRow" data-type="explain" data-val="hide">
+          <input class="startOptRadio" type="radio" name="startOptExpl" value="hide" />
+          <div>
+            <p class="startOptLabel">숨김</p>
+            <p class="startOptDesc">해설 영역을 아예 표시하지 않습니다.</p>
+          </div>
+        </div>
+        <div class="startOptRow" data-type="explain" data-val="show">
+          <input class="startOptRadio" type="radio" name="startOptExpl" value="show" />
+          <div>
+            <p class="startOptLabel">보이기</p>
+            <p class="startOptDesc">채점 후 해설을 항상 표시합니다.</p>
           </div>
         </div>
       </div>
@@ -3799,5 +3993,7 @@ if (aiCloseBtn) aiCloseBtn.addEventListener('pointerdown', (e)=>{ e.stopPropagat
     </div>
   </div>
 
+
+  <div id="aiBlockOverlay" aria-hidden="true"></div>
 </body>
 </html>
