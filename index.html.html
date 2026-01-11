@@ -983,6 +983,26 @@ width: 100%;
       }[m]));
     }
 
+
+    function normalizeAiText(text){
+      if (!text) return "";
+      let t = String(text);
+
+      // 1) 제목 기호 제거 (#, ## 등)
+      t = t.replace(/^\s*#{1,6}\s*/gm, "");
+
+      // 2) 강조 기호 제거 (**bold**, *italic*)
+      t = t.replace(/\*\*(.*?)\*\*/g, "$1");
+      t = t.replace(/\*(.*?)\*/g, "$1");
+
+      // 3) 불릿 문자 정리 (-, •)
+      t = t.replace(/^\s*[-•]\s*/gm, "");
+
+      // 4) 과도한 줄바꿈 정리
+      t = t.replace(/\n{3,}/g, "\n\n");
+
+      return t.trim();
+    }
     function formatExplanationWithHighlight(explText, answerIndex){
       const target = CIRCLED[answerIndex];
       if (!target) return escapeHtml(explText ?? "");
@@ -2381,9 +2401,9 @@ function aiRenderMsgs(){
     }
     // 스트리밍 중인 assistant 버블에 타이핑 커서 표시
     else if (m.type === "assistant" && aiIsStreaming && aiActiveAssistantIdx === i) {
-      div.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml((m.text || "") + "▌")}</span>`;
+      div.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(normalizeAiText((m.text || "") + "▌"))}</span>`;
     } else if (m.type === "assistant") {
-      div.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(m.text || "")}</span>`;
+      div.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(normalizeAiText(m.text || ""))}</span>`;
     } else {
       div.textContent = m.text;
     }
@@ -2534,7 +2554,7 @@ function aiRenderMsgs(){
       // 사용자가 중간에 스크롤해서 벗어나면 자동 스크롤 중단
       if (autoScroll && !isNearBottom()) autoScroll = false;
 
-      streamEl.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(streamText + (aiIsStreaming ? "▌" : ""))}</span>`;
+      streamEl.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(normalizeAiText(streamText + (aiIsStreaming ? "▌" : "")))}</span>`;
 if (autoScroll && aiMsgs) aiMsgs.scrollTop = aiMsgs.scrollHeight;
     });
   };
@@ -2669,7 +2689,7 @@ if (autoScroll && aiMsgs) aiMsgs.scrollTop = aiMsgs.scrollHeight;
 
     // 커서 제거 + 최종 텍스트 고정
     if (streamEl){
-      streamEl.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(streamText)}</span>`;
+      streamEl.innerHTML = `${AI_STAR_SVG}<span class="aiText">${escapeHtml(normalizeAiText(streamText))}</span>`;
     }
     // 전체 렌더 1회로 상태 정리(스크롤/커서 등)
     aiRenderMsgs();
