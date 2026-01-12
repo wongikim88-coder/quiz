@@ -1076,6 +1076,33 @@ body.aiLock{
 }
 
 </style>
+
+<script>
+const APP_BUILD = "cors-fix-2026-01-12-a";
+
+/* Service worker cache can cause GitHub Pages to keep serving an old index.html
+   (and therefore an old AI server URL). We hard-refresh SW + caches on load,
+   then register the latest SW with a versioned URL. */
+if ("serviceWorker" in navigator && (location.protocol === "http:" || location.protocol === "https:")) {
+  window.addEventListener("load", async () => {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+      if (window.caches && caches.keys) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+    } catch (e) {
+      /* no-op */
+    }
+    try {
+      await navigator.serviceWorker.register(`./sw.js?v=${APP_BUILD}`);
+    } catch (e) {
+      /* no-op */
+    }
+  });
+}
+</script>
 </head>
 
 <body>
@@ -2808,7 +2835,8 @@ function startWrongReview() {
       });
     }// ====== AI에게 물어보세요 (로컬 서버) ======
 
-    const AI_SERVER_BASE = "https://quiz-t8vd.onrender.com";
+    const AI_SERVER_BASE = "https://quiz-ai-server-61mx.onrender.com";
+    console.log("[AI] build:", (typeof APP_BUILD!=="undefined"?APP_BUILD:"(no-build)"), "AI_SERVER_BASE:", AI_SERVER_BASE);
 
     const AI_SERVER_CHAT = `${AI_SERVER_BASE}/chat`;
     const AI_SERVER_CHAT_STREAM = `${AI_SERVER_BASE}/chat_stream`;
