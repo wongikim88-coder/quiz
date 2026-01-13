@@ -1231,6 +1231,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
     </div>
   </div>
   <script src="./bank_civil.js"></script>
+  <script src="./bank_civil_2.js"></script>
 
   <script>
     // ====== 문제 은행 / 과목(확장형) ======
@@ -1300,7 +1301,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         id: "accounting",
         name: "회계학",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_CIVIL
+        questions: BANK_CIVIL_2
       },
 
             {
@@ -2835,7 +2836,7 @@ function startWrongReview() {
       });
     }// ====== AI에게 물어보세요 (로컬 서버) ======
 
-    const AI_SERVER_BASE = "https://quiz-ai-server-61mx.onrender.com";
+    const AI_SERVER_BASE = "http://127.0.0.1:8787";
     console.log("[AI] build:", (typeof APP_BUILD!=="undefined"?APP_BUILD:"(no-build)"), "AI_SERVER_BASE:", AI_SERVER_BASE);
 
     const AI_SERVER_CHAT = `${AI_SERVER_BASE}/chat`;
