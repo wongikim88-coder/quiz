@@ -1078,7 +1078,7 @@ body.aiLock{
 </style>
 
 <script>
-const APP_BUILD = "cors-fix-2026-01-12-a";
+const APP_BUILD = "RAG ISSUE FIXED-2026-01-14-a";
 
 /* Service worker cache can cause GitHub Pages to keep serving an old index.html
    (and therefore an old AI server URL). We hard-refresh SW + caches on load,
@@ -1231,6 +1231,8 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
     </div>
   </div>
   <script src="./bank_civil.js"></script>
+  <script src="./bank_civil_2.js"></script>
+
 
   <script>
     // ====== 문제 은행 / 과목(확장형) ======
@@ -1300,7 +1302,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         id: "accounting",
         name: "회계학",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_CIVIL
+        questions: BANK_CIVIL_2
       },
 
             {
