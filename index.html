@@ -1230,11 +1230,30 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
       </div>
     </div>
   </div>
-  <script src="./bank_civil.js"></script>
-  <script src="./bank_civil_2.js"></script>
+  <script src="./bank_001_civil.js"></script>
+  <script src="./bank_002.js"></script>
 
   <script>
     // ====== 문제 은행 / 과목(확장형) ======
+    // ✅ bank 파일들이 window.BANK_MAP에 등록되도록 표준화(없으면 여기서 보강)
+    // - bank_001_civil.js 같은 신규 네이밍을 쓰든, 기존 bank_civil.js를 쓰든 동작하도록 함
+    window.BANK_MAP = window.BANK_MAP || {};
+    try{
+      if (window.BANK_CIVIL && !window.BANK_MAP["civil"]) window.BANK_MAP["civil"] = window.BANK_CIVIL;
+      if (window.BANK_CIVIL_2 && !window.BANK_MAP["accounting"]) window.BANK_MAP["accounting"] = window.BANK_CIVIL_2;
+      // 필요 시 추가:
+      // if (window.BANK_TAX && !window.BANK_MAP["tax"]) window.BANK_MAP["tax"] = window.BANK_TAX;
+    }catch(e){ console.warn("BANK_MAP bootstrap failed:", e); }
+
+    function getBankBySubjectId(subjectId){
+      const sid = String(subjectId || "");
+      if (window.BANK_MAP && window.BANK_MAP[sid]) return window.BANK_MAP[sid];
+      // fallback: 최소 동작 보장
+      if (sid === "accounting" && window.BANK_CIVIL_2) return window.BANK_CIVIL_2;
+      if (window.BANK_CIVIL) return window.BANK_CIVIL;
+      return [];
+    }
+
     // ✅ 과목을 추가하려면 아래 SUBJECTS에 {"id","name","desc","questions"}만 추가하면 됩니다.
         // ✅ BANK_CIVIL은 외부 파일(bank_civil.js)에서 로드됩니다.
 
@@ -1294,28 +1313,28 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         id: "civil",
         name: "민법",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_CIVIL
+        questions: getBankBySubjectId("civil")
       },
 
             {
         id: "accounting",
         name: "회계학",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_CIVIL_2
+        questions: getBankBySubjectId("accounting")
       },
 
             {
         id: "tax",
         name: "세법",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_CIVIL
+        questions: getBankBySubjectId("tax")
       },
 
                {
         id: "economy",
         name: "재정학",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_CIVIL
+        questions: getBankBySubjectId("economy")
       },
       // 예) {
       //   id: "brokerage",
@@ -2893,14 +2912,17 @@ function startWrongReview() {
       try{
         const viewOrder = getViewOrder();
         const currentId = viewOrder[state.idx];
-        return "q:" + String(currentId);
+
+        // ✅ 과목 + 문항으로 AI 대화를 분리 (id 충돌/과목 전환 시 문맥 꼬임 방지)
+        const sid = (app && app.currentSubjectId) ? String(app.currentSubjectId) : "unknown";
+        return "sub:" + sid + "|q:" + String(currentId);
       }catch{
-        return "q:unknown";
+        return "sub:unknown|q:unknown";
       }
     }
 
     function aiSwitchToQKey(nextKey){
-      const key = String(nextKey || "q:unknown");
+      const key = String(nextKey || "sub:unknown|q:unknown");
       if (aiActiveQKey === key) return;
 
       // 저장
