@@ -2835,7 +2835,7 @@ function startWrongReview() {
       });
     }// ====== AI에게 물어보세요 (로컬 서버) ======
 
-    const AI_SERVER_BASE = "http://127.0.0.1:8787";
+    const AI_SERVER_BASE = "https://quiz-ai-server-61mx.onrender.com";
     console.log("[AI] build:", (typeof APP_BUILD!=="undefined"?APP_BUILD:"(no-build)"), "AI_SERVER_BASE:", AI_SERVER_BASE);
 
     const AI_SERVER_CHAT = `${AI_SERVER_BASE}/chat`;
