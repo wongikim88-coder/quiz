@@ -2036,7 +2036,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
       let correct = 0;
       let wrong = 0;
       for (const uid of allUids) {
-        const a = state.answered[id];
+        const a = state.answered[uid];
         if (!a) continue;
         if (a.isCorrect) correct += 1;
         else wrong += 1;
@@ -2182,9 +2182,9 @@ function fisherYatesShuffle(arr) {
         const key = SHUFFLE_ONCE_KEY_PREFIX + app.currentSubjectId;
         if (sessionStorage.getItem(key) === "1") return;
 
-        const answeredSet = new Set(Object.keys(state.answered || {}).map(Number));
-        const answeredInOrder = state.order.filter(id => answeredSet.has(id));
-        const unanswered = state.order.filter(id => !answeredSet.has(id));
+        const answeredSet = new Set(Object.keys(state.answered || {}));
+        const answeredInOrder = state.order.filter(uid => answeredSet.has(uid));
+        const unanswered = state.order.filter(uid => !answeredSet.has(uid));
 
         const shuffledUnanswered = fisherYatesShuffle(unanswered);
         state.order = [...answeredInOrder, ...shuffledUnanswered];
@@ -2315,7 +2315,7 @@ function fisherYatesShuffle(arr) {
     // ====== 3안: 오답 라운드 종료 처리 ======
     function finishWrongRound() {
       // 이번 라운드에서 틀린 문제만 모으기(여전히 isCorrect=false인 것)
-      const remainingWrong = (state.wrongOrder || []).filter(id => {
+      const remainingWrong = (state.wrongOrder || []).filter(uid => {
         const rr = state.reviewResults && state.reviewResults[uid];
         return !rr || rr.isCorrect === false;
       });
