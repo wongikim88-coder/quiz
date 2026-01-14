@@ -1328,27 +1328,28 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
 
     // 현재 과목 컨텍스트(렌더 시점에 설정)
     let questions = [];
-    let qById = new Map();
-    let allIds = [];
+    let qByUid = new Map();
+    let allUids = [];
 
     // ====== 상태(로컬 저장) : 과목별 저장 + 홈 화면 ======
-    const APP_STORAGE_KEY = "quiz_hub_state_v1";
+    const APP_STORAGE_KEY = "quiz_hub_state_v2_uid"
+    const OLD_APP_STORAGE_KEY = "quiz_hub_state_v1";
 
     const makeDefaultQuizState = () => ({
       idx: 0,
       view: "main",      // "main" | "wrongReview"
-      order: [],         // 과목별 문제 id 순서
-      answered: {},      // (시험 결과) { [id]: { selected, isCorrect, at } }
+      order: [],         // 과목별 문제 uid 순서
+      answered: {},      // (시험 결과) { [uid]: { selected, isCorrect, at } }
       reviewed: {},      // 오답복습에서 이번 세션 선택 여부
 
       // ✅ (추가) 오답복습 결과는 시험 결과와 분리 저장
-      reviewResults: {}, // { [id]: { selected, isCorrect, at } }
+      reviewResults: {}, // { [uid]: { selected, isCorrect, at } }
 
       // ✅ (추가) 완료(시험) 점수 스냅샷: 오답복습으로 변동되지 않게 고정
       finalSnapshot: null, // { correct, wrong, total, percent, at }
 
       // ✅ (추가) 오답복습에서 맞힌 문제를 기억 (다음 오답복습에서 제외)
-      wrongMastery: {}, // { [id]: true }
+      wrongMastery: {}, // { [uid]: true }
 
       // ✅ (추가) 해설 표시 옵션: "hide" | "show"
       explainVisibility: "show",
@@ -1366,7 +1367,11 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
     function loadAppState() {
       try {
         const raw = localStorage.getItem(APP_STORAGE_KEY);
-        if (!raw) return makeDefaultAppState();
+        if (!raw) {
+          // UID-only 전환(v2): v1 저장데이터(id 기반)는 호환되지 않으므로 초기화합니다.
+          try { if (localStorage.getItem(OLD_APP_STORAGE_KEY)) localStorage.removeItem(OLD_APP_STORAGE_KEY); } catch {}
+          return makeDefaultAppState();
+        }
         const parsed = JSON.parse(raw);
         const base = makeDefaultAppState();
         const merged = { ...base, ...parsed };
@@ -1538,7 +1543,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
       // ✅ '다시 풀기'는 이전 풀이 흔적(선택/점수/오답복습)을 모두 초기화하고 새 회차로 시작
       if (freshRestart){
         const qs = makeDefaultQuizState();
-        qs.order = [...allIds];
+        qs.order = [...allUids];
         app.perSubject[subjectId] = qs;
         state = app.perSubject[subjectId];
         pendingFinish = false;
@@ -1555,7 +1560,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
 
       if (optVal === "ordered"){
         // 원본 순서 그대로
-        state.order = [...allIds];
+        state.order = [...allUids];
         state.idx = 0;
 
         // 자동 셔플 1회 플래그 제거(같은 세션에서 다시 들어와도 섞이지 않게)
@@ -1624,21 +1629,22 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
 
       // 문제 컨텍스트
       questions = subj.questions || [];
-      qById = new Map(questions.map(q => [q.id, q]));
-      allIds = questions.map(q => q.id);
+      assertUniqueUids(questions);
+      qByUid = new Map(questions.map(q => [q.uid, q]));
+      allUids = questions.map(q => q.uid);
 
       // 과목별 state 보장
       if (!app.perSubject[subj.id]) {
         const qs = makeDefaultQuizState();
-        qs.order = [...allIds];
+        qs.order = [...allUids];
         app.perSubject[subj.id] = qs;
       } else {
         // order/ids 유효성 보정
         const qs = app.perSubject[subj.id];
-        if (!Array.isArray(qs.order)) qs.order = [...allIds];
-        const inOrder = qs.order.filter(id => qById.has(id));
+        if (!Array.isArray(qs.order)) qs.order = [...allUids];
+        const inOrder = qs.order.filter(uid => qByUid.has(uid));
         const set = new Set(inOrder);
-        for (const id of allIds) if (!set.has(id)) inOrder.push(id);
+        for (const id of allUids) if (!set.has(id)) inOrder.push(id);
         qs.order = inOrder;
       }
 
@@ -1665,7 +1671,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
       let correct = 0;
       let answered = 0;
       for (const q of subj.questions) {
-        const a = qs.answered?.[q.id];
+        const a = qs.answered?.[q.uid];
         if (!a) continue;
         answered += 1;
         if (a.isCorrect) correct += 1;
@@ -1682,7 +1688,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
       const total = (subj.questions || []).length;
       let correct = 0, wrong = 0, answered = 0;
       for (const q of subj.questions) {
-        const a = qs.answered?.[q.id];
+        const a = qs.answered?.[q.uid];
         if (!a) continue;
         answered += 1;
         if (a.isCorrect) correct += 1;
@@ -1719,9 +1725,8 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         let wrongRemaining = 0;
         const mastered = qs.wrongMastery || {};
 
-        for (const [idStr, a] of Object.entries(qs.answered || {})) {
-          const id = Number(idStr);
-          if (a && a.isCorrect === false && !mastered[id]) {
+        for (const [uid, a] of Object.entries(qs.answered || {})) {
+          if (a && a.isCorrect === false && !mastered[uid]) {
             wrongRemaining += 1;
           }
         }
@@ -1748,7 +1753,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         // 과목별 state가 없으면 생성(홈에서 바로 눌러도 됨)
         if (!app.perSubject[subj.id]) {
           const qs = makeDefaultQuizState();
-          qs.order = (subj.questions || []).map(q => q.id);
+          qs.order = (subj.questions || []).map(q => q.uid);
           app.perSubject[subj.id] = qs;
         }
 
@@ -1810,9 +1815,8 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         let wrongRemaining = 0;
         if (qs && qs.answered) {
           const mastered = qs.wrongMastery || {};
-          for (const [idStr, a] of Object.entries(qs.answered)) {
-            const id = Number(idStr);
-            if (a && a.isCorrect === false && !mastered[id]) wrongRemaining += 1;
+          for (const [uid, a] of Object.entries(qs.answered)) {
+            if (a && a.isCorrect === false && !mastered[uid]) wrongRemaining += 1;
           }
         }
 
@@ -1879,7 +1883,7 @@ head.appendChild(left);
             const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
             if (!ok) return;
             const qs2 = makeDefaultQuizState();
-            qs2.order = (subj.questions || []).map(q => q.id);
+            qs2.order = (subj.questions || []).map(q => q.uid);
             app.perSubject[subj.id] = qs2;
             saveAppState();
             showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
@@ -1941,7 +1945,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
 	              const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
 	              if (!ok) return;
 	              const qs = makeDefaultQuizState();
-	              qs.order = (subj.questions || []).map(q => q.id);
+	              qs.order = (subj.questions || []).map(q => q.uid);
 	              app.perSubject[subj.id] = qs;
 	              saveAppState();
 	              showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
@@ -1970,7 +1974,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
 	              const ok = window.confirm(`[${subj.name}] 과목을 처음부터 다시 푸시겠습니까?`);
 	              if (!ok) return;
 	              const qs = makeDefaultQuizState();
-	              qs.order = (subj.questions || []).map(q => q.id);
+	              qs.order = (subj.questions || []).map(q => q.uid);
 	              app.perSubject[subj.id] = qs;
 	              saveAppState();
 	              showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
@@ -1988,7 +1992,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
             if (!ok) return;
             // 과목별 초기화
             const qs = makeDefaultQuizState();
-            qs.order = (subj.questions || []).map(q => q.id);
+            qs.order = (subj.questions || []).map(q => q.uid);
             app.perSubject[subj.id] = qs;
             saveAppState();
             showHomeBanner(`'${subj.name}' 진행상태를 초기화했습니다.`);
@@ -2031,7 +2035,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
     function computeCounts() {
       let correct = 0;
       let wrong = 0;
-      for (const id of allIds) {
+      for (const uid of allUids) {
         const a = state.answered[id];
         if (!a) continue;
         if (a.isCorrect) correct += 1;
@@ -2041,22 +2045,35 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
     }
 
     function isAllAnswered() {
-      for (const id of allIds) {
-        if (!state.answered[id]) return false;
+      for (const uid of allUids) {
+        if (!state.answered[uid]) return false;
       }
       return true;
     }
 
-    function getWrongIdsFromAnswered() {
+    function getWrongUidsFromAnswered() {
       const wrong = [];
-      for (const [idStr, a] of Object.entries(state.answered)) {
-        const id = Number(idStr);
-        if (a && a.isCorrect === false && qById.has(id)) wrong.push(id);
+      for (const [uid, a] of Object.entries(state.answered)) {
+        if (a && a.isCorrect === false && qByUid.has(uid)) wrong.push(uid);
       }
       return wrong;
     }
 
-    function fisherYatesShuffle(arr) {
+    
+    function assertUniqueUids(qs) {
+      const seen = new Set();
+      for (const q of qs || []) {
+        if (!q || typeof q.uid !== "string" || !q.uid.trim()) {
+          throw new Error("Question uid missing. Run uid assignment script on bank files.");
+        }
+        if (seen.has(q.uid)) {
+          throw new Error("Duplicate uid detected: " + q.uid);
+        }
+        seen.add(q.uid);
+      }
+    }
+
+function fisherYatesShuffle(arr) {
       const a = [...arr];
       for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -2132,7 +2149,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
         if (Array.isArray(state.wrongOrder) && state.wrongOrder.length > 0) return state.wrongOrder;
 
         // 혹시 상태 꼬였으면 fallback으로 구성
-        const fallback = fisherYatesShuffle(getWrongIdsFromAnswered());
+        const fallback = fisherYatesShuffle(getWrongUidsFromAnswered());
         state.wrongOrder = fallback;
         state.wrongRound = state.wrongRound || 1;
         saveAppState();
@@ -2150,11 +2167,11 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
     // ✅ 현재 문제를 이미 선택(채점)했는지 체크
     function hasAnsweredCurrent() {
       const view = getViewOrder();
-      const currentId = view[state.idx];
+      const currentUid = view[state.idx];
       if (state.view === "wrongReview") {
-        return !!state.reviewed[currentId];
+        return !!state.reviewed[currentUid];
       }
-      return !!state.answered[currentId];
+      return !!state.answered[currentUid];
     }
 
     // 앱 실행 시 자동 셔플(이미 푼 문제는 셔플 제외)
@@ -2203,8 +2220,8 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
       // 오답복습에서는 "이번 세션에서 한 번이라도 선택한 문제"만 복원(이전 시도 답안은 숨김)
       if (state.view !== "wrongReview") return false;
       const view = getViewOrder();
-      const currentId = view[state.idx];
-      return !state.reviewed[currentId];
+      const currentUid = view[state.idx];
+      return !state.reviewed[currentUid];
     }
 
     // ====== 완료 화면 렌더 ======
@@ -2215,7 +2232,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
       // ✅ 최종 점수 스냅샷: 시험 결과를 고정 (오답복습으로 변동 금지)
       if (!state.finalSnapshot) {
         const counts0 = computeCounts();
-        const total0 = allIds.length;
+        const total0 = allUids.length;
         state.finalSnapshot = {
           correct: counts0.correct,
           wrong: counts0.wrong,
@@ -2253,7 +2270,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
       choicesEl.innerHTML = `
         <div class="doneBox">
           <p class="doneTitle">결과</p>
-          <p class="doneMeta">총 ${allIds.length}문제 기준</p>
+          <p class="doneMeta">총 ${allUids.length}문제 기준</p>
           <div class="kv">
             <div class="scoreBig">${percent}점</div>
             <span class="pill">정답 ${counts.correct}</span>
@@ -2285,7 +2302,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
       actionRow.appendChild(btnReset);
 
       const mastered = state.wrongMastery || {};
-      const wrongRemainingCount = getWrongIdsFromAnswered().filter(id => !mastered[id]).length;
+      const wrongRemainingCount = getWrongUidsFromAnswered().filter(uid => !mastered[uid]).length;
       if (wrongRemainingCount > 0) {
         const btnWrong = document.createElement("button");
         btnWrong.className = "btn tertiary small";
@@ -2299,7 +2316,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
     function finishWrongRound() {
       // 이번 라운드에서 틀린 문제만 모으기(여전히 isCorrect=false인 것)
       const remainingWrong = (state.wrongOrder || []).filter(id => {
-        const rr = state.reviewResults && state.reviewResults[id];
+        const rr = state.reviewResults && state.reviewResults[uid];
         return !rr || rr.isCorrect === false;
       });
 
@@ -2356,7 +2373,7 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
       }
 
       const counts = computeCounts();
-      const total = allIds.length;
+      const total = allUids.length;
       const percent = Math.round((counts.correct / total) * 100);
       if (scoreEl) scoreEl.textContent = `정답 ${counts.correct}`;
       if (wrongCountEl) wrongCountEl.textContent = `오답 ${counts.wrong}`;
@@ -2458,10 +2475,10 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
         // => 라운드 완료 배너는 render() 진입 직후 showBanner 호출이라 유지됨.
       }
 
-      const currentId = viewOrder[state.idx];
-      const q = qById.get(currentId);
+      const currentUid = viewOrder[state.idx];
+      const q = qByUid.get(currentUid);
       // 타이머 시작(문제 진입 시 30초)
-      startTimerForQuestion(currentId);
+      startTimerForQuestion(currentUid);
 
       // ✅ 진행 표시: wrongReview면 라운드도 함께 표시
       if (state.view === "wrongReview") {
@@ -2512,8 +2529,8 @@ startBtn.textContent = canResume ? "이어하기" : (isCompleted ? "다시 풀�
 
       // 메인 화면에서는 풀었던 문제 복원 / 오답 풀이에서는 복원하지 않음
       const prevAnswer = (state.view === "wrongReview")
-        ? (state.reviewResults && state.reviewResults[q.id])
-        : state.answered[q.id];
+        ? (state.reviewResults && state.reviewResults[q.uid])
+        : state.answered[q.uid];
       if (prevAnswer && !shouldHidePreviousSelectionInWrongReview()) {
         locked = true;
         selected = prevAnswer.selected;
@@ -2539,8 +2556,8 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
       if (bannerEl.textContent.includes("보기를 선택해야")) hideBanner();
 
       const viewOrder = getViewOrder();
-      const currentId = viewOrder[state.idx];
-      const q = qById.get(currentId);
+      const currentUid = viewOrder[state.idx];
+      const q = qByUid.get(currentUid);
       const correct = q.answerIndex;
 
       const buttons = [...choicesEl.children];
@@ -2560,21 +2577,21 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
 
       if (state.view === "wrongReview") {
         // ✅ 오답복습: 시험 결과(answered) 절대 수정 금지
-        state.reviewResults[q.id] = { selected, isCorrect, at: Date.now() };
+        state.reviewResults[q.uid] = { selected, isCorrect, at: Date.now() };
         if (isCorrect) {
           if (!state.wrongMastery) state.wrongMastery = {};
-          state.wrongMastery[q.id] = true;
+          state.wrongMastery[q.uid] = true;
         }
-        state.reviewed[currentId] = true; // 다음 이동 가능 플래그
+        state.reviewed[currentUid] = true; // 다음 이동 가능 플래그
       } else {
         // ✅ 메인(시험): 시험 결과만 기록
-        state.answered[q.id] = { selected, isCorrect, at: Date.now() };
+        state.answered[q.uid] = { selected, isCorrect, at: Date.now() };
       }
       saveAppState();
 
 
       const counts = computeCounts();
-      const total = allIds.length;
+      const total = allUids.length;
       const percent = Math.round((counts.correct / total) * 100);
       if (scoreEl) scoreEl.textContent = `정답 ${counts.correct}`;
       if (wrongCountEl) wrongCountEl.textContent = `오답 ${counts.wrong}`;
@@ -2691,7 +2708,7 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
       pendingFinish = false;
       const subj = getSubjectById(app.currentSubjectId) || SUBJECTS[0];
       const qs = makeDefaultQuizState();
-      qs.order = (subj.questions || []).map(q => q.id);
+      qs.order = (subj.questions || []).map(q => q.uid);
 
       app.perSubject[subj.id] = qs;
       state = app.perSubject[subj.id];
@@ -2716,7 +2733,7 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
         if (state.wrongMastery && rr) {
           for (const [idStr, r] of Object.entries(rr)) {
             if (r && r.isCorrect === true) {
-              delete state.wrongMastery[Number(idStr)];
+              delete state.wrongMastery[idStr];
             }
           }
         }
@@ -2760,9 +2777,9 @@ function startWrongReview() {
       pendingFinish = false;
       state.suppressWrongCta = false;
 
-      const wrongAll = getWrongIdsFromAnswered();
+      const wrongAll = getWrongUidsFromAnswered();
       const mastered = state.wrongMastery || {};
-      const wrongNow = wrongAll.filter(id => !mastered[id]);
+      const wrongNow = wrongAll.filter(uid => !mastered[uid]);
       if (wrongNow.length === 0) {
         showBanner("남아있는 오답이 없습니다. (오답복습에서 이미 해결했을 수 있어요)");
         return;
@@ -2893,8 +2910,8 @@ function startWrongReview() {
     function aiGetCurrentQKey(){
       try{
         const viewOrder = getViewOrder();
-        const currentId = viewOrder[state.idx];
-        return "q:" + String(currentId);
+        const currentUid = viewOrder[state.idx];
+        return "q:" + String(currentUid);
       }catch{
         return "q:unknown";
       }
@@ -3027,10 +3044,10 @@ async function aiPing(){
     function aiRefreshContext(){
       try{
         const viewOrder = getViewOrder();
-        const currentId = viewOrder[state.idx];
-        const q = qById.get(currentId);
+        const currentUid = viewOrder[state.idx];
+        const q = qByUid.get(currentUid);
         // ✅ 문제 단위로 대화 기록 스위칭
-        aiSwitchToQKey("q:" + String(currentId));
+        aiSwitchToQKey("q:" + String(currentUid));
         aiContextText = aiBuildContext(q);
       } catch {
         aiSwitchToQKey("q:unknown");
