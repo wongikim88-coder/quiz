@@ -1,6 +1,6 @@
 // bank_civil_3.js
 // 신의성실의 원칙 / 권리남용 (세무사 기출, 해설 전체 원문 수록)
-window.BANK_CIVIL = [
+window.BANK_CIVIL_3 = [
     {
       id: 3001,
       uid: "civ-5078d1bb-7cf5-4d46-9f7f-123e7d2e0357",
