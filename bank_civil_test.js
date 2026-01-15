@@ -123,10 +123,6 @@ window.BANK_CIVIL_TEST = [
 
 정답 ①`
 },
-];
-
-//AUTO-GENERATED FROM PDF pages 10-20 - extracted as-is (Flexcil header/footer text ignored as non-question content)
-window.BANK_CIVIL = [
 {
   id: 6,
   uid: "civ-99a3b452-1f93-42b8-bd01-0db029cfb90a",
