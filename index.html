@@ -1253,7 +1253,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
       </div>
     </div>
   </div>
-  <script src="./bank_civil.js"></script>
+  <script src="./bank_civil_test.js"></script>
   <script src="./bank_civil_2.js"></script>
   <script src="./bank_civil_3.js"></script>
   <script src="./bank_civil_4.js"></script>
@@ -1320,7 +1320,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         id: "civil",
         name: "민법",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_CIVIL
+        questions: BANK_CIVIL_test
       },
 
             {
@@ -3068,7 +3068,7 @@ async function aiPing(){
         `【문제】\n${q.question}`,
         `【보기】\n${choices}`,
         `【정답】\n${correctNo}번`,
-      //  `【해설(원문)】\n${q.explanation}`
+        `【해설(원문)】\n${q.explanation}`
       ].join("\n\n");
     }
 
