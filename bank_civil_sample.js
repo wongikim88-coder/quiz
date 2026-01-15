@@ -1,10 +1,9 @@
-/* bank_civil.js - 민법 문제은행 */
-/* 이 파일은 quiz41에서 분리된 과목별 문제은행입니다. */
+//BANK SAMPLE
 window.BANK_CIVIL_SAMPLE = [
 {
   id: 1,
-  uid: "civ-1ae33ac3-92bb-47b8-af65-19435d22ac9f",
   question: "법원(法源)에 관한 설명으로 옳지 않은 것은?",
+  source: "세무사 18년",
   choices: [
     "민법의 법원으로서 법률은 형식적 의미의 민법에 한정된다.",
     "지방의회가 제정한 조례는 민사에 관한 것이면 민법의 법원이 된다.",
@@ -12,4 +11,5 @@ window.BANK_CIVIL_SAMPLE = [
     "대통령이 발하는 긴급명령이 민사에 관한 것이면 민법의 법원이 된다.",
     "일반적으로 승인된 국제법규인 국제조약이 민사에 관한 것이면 민법의 법원이 된다."
   ],
-  answerIndex: 0
+  answerIndex: 0,}
+];
