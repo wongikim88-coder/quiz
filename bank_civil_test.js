@@ -129,6 +129,7 @@ window.BANK_CIVIL_TEST = [
 window.BANK_CIVIL = [
 {
   id: 6,
+  uid: "civ-99a3b452-1f93-42b8-bd01-0db029cfb90a",
   question: "민법의 적용과 해석방법에 관한 설명으로 옳지 않은 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 17년",
   choices: [
@@ -145,6 +146,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 7,
+  uid: "civ-42662bbc-f997-466a-b66a-ffdf6ff26224",
   question: "권리의 성질에 관한 설명으로 옳지 않은 것은?",
   source: "세무사 17년",
   choices: [
@@ -165,6 +167,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 8,
+  uid: "civ-31633d02-7d9d-4fec-a47b-ac27600fab33",
   question: "‘권리의 효력’에 따른 분류에 의할 경우, ‘계약해제권’의 법적 성질은?",
   source: "세무사 22년",
   choices: [
@@ -181,6 +184,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 9,
+  uid: "civ-30971bc5-910c-4af8-a87c-5157c32a8f51",
   question: "P은 출근하는 길에 호의로 회사 동료 Z을 자동차에 태워주기로 약속하였다. P과 Z 사이에 법적으로 구속당할 의사가 없는 경우, 이에 관한 설명으로 옳은 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 15년",
   choices: [
@@ -199,6 +203,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 10,
+  uid: "civ-3b60458a-22e5-4c27-ae69-d19f4af38e55",
   question: "권리의 충돌과 경합에 관한 설명으로 옳은 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 17년",
   choices: [
@@ -221,6 +226,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 11,
+  uid: "civ-6a2a2077-54cf-491a-a033-6ad6808b4cc1",
   question: "신의성실의 원칙에 관한 설명으로 옳지 않은 것은?",
   source: "세무사 18년",
   choices: [
@@ -245,6 +251,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 12,
+  uid: "civ-0c478ba4-26b4-4793-9f92-70c581c758c9",
   question: "신의성실의 원칙에 반하는 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 19년",
   choices: [
@@ -269,6 +276,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 13,
+  uid: "civ-aeb2959e-69a4-4df8-8390-3c16ee500c68",
   question: "신의성실의 원칙에 관한 설명으로 옳은 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 20년",
   choices: [
@@ -293,6 +301,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 14,
+  uid: "civ-e461529e-63a2-4eea-981d-a4eee58cd917",
   question: "신의성실의 원칙에 위반되는 행위가 아닌 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 20년",
   choices: [
@@ -317,6 +326,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 15,
+  uid: "civ-b43d4758-5286-4b68-92d6-6c245deffa9a",
   question: "신의성실의 원칙(신의칙) 및 권리남용에 관한 설명으로 옳은 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 21년",
   choices: [
@@ -341,6 +351,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 16,
+  uid: "civ-295e0d71-bdd0-4467-9352-dde453c86827",
   question: "권리남용에 관한 설명으로 옳지 않은 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 19년",
   choices: [
@@ -361,6 +372,7 @@ window.BANK_CIVIL = [
 },
 {
   id: 17,
+  uid: "civ-30842624-9f68-4d13-b73e-a9f41eb0d0bd",
   question: "권리실효의 원칙에 관한 설명으로 옳지 않은 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 19년",
   choices: [
