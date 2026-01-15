@@ -1075,6 +1075,26 @@ body.aiLock{
   100% { opacity: 0; transform: translateY(-14px) scale(.98); }
 }
 
+
+/* Question header (question + source) */
+.qHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+.qSource{
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  padding-top: 6px; /* aligns visually with h1 first line */
+  opacity: .95;
+}
+@media (max-width: 520px){
+  .qHead{ align-items:flex-start; }
+  .qSource{ white-space: normal; text-align:right; max-width: 42%; }
+}
+
 </style>
 
 <script>
@@ -1158,7 +1178,10 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
           </div>
         </div>
 
-        <h1 id="qText"></h1>
+        <div class="qHead">
+          <h1 id="qText"></h1>
+          <div id="qSource" class="qSource"></div>
+        </div>
         <div id="choices"></div>
 
         <div class="nav" id="navBar">
@@ -1232,6 +1255,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
   </div>
   <script src="./bank_civil.js"></script>
   <script src="./bank_civil_2.js"></script>
+  <script src="./bank_civil_3.js"></script>
 
 
   <script>
@@ -1309,7 +1333,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         id: "tax",
         name: "세법",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_CIVIL
+        questions: BANK_CIVIL_3
       },
 
                {
@@ -2502,6 +2526,12 @@ function fisherYatesShuffle(arr) {
       }
 
       qText.textContent = q.question;
+      // Show source (e.g., "세무사 18년") if present
+      if (qSource){
+        const s = (q.source || q.exam || q.metaSource || "").toString().trim();
+        qSource.textContent = s;
+        qSource.style.display = s ? "block" : "none";
+      }
       choicesEl.innerHTML = "";
 
       selected = null;
