@@ -2,6 +2,7 @@
 window.BANK_CIVIL_SAMPLE = [
 {
   id: 1,
+  uid: "civ-2b50ee95-150e-46e5-a671-908c00dccda8",
   question: "법원(法源)에 관한 설명으로 옳지 않은 것은?",
   source: "세무사 18년",
   choices: [
