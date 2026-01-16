@@ -236,12 +236,7 @@
 
 
 
-display:none;
-      flex: 1;
-      min-height: 0;
-      padding: 0;
-      background:#fff;
-    }
+
     .aiBody.show{ display:flex; flex-direction: column; }
 
     /* 메시지 영역: 버블 */
@@ -2879,11 +2874,8 @@ function startWrongReview() {
     // PWA Service Worker 등록
     // ⚠️ file:// 로 직접 열면 origin이 null이라 SW 등록이 실패합니다.
     // GitHub Pages / HTTPS 환경에서만 등록하도록 가드합니다.
-    if ("serviceWorker" in navigator && (location.protocol === "http:" || location.protocol === "https:")) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js");
-      });
-    }// ====== AI에게 물어보세요 (로컬 서버) ======
+
+    // ====== AI에게 물어보세요 (로컬 서버) ======
 
     const AI_SERVER_BASE = "https://quiz-ai-server-61mx.onrender.com";
     console.log("[AI] build:", (typeof APP_BUILD!=="undefined"?APP_BUILD:"(no-build)"), "AI_SERVER_BASE:", AI_SERVER_BASE);
