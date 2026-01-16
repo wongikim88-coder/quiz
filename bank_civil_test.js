@@ -391,6 +391,7 @@ window.BANK_CIVIL_TEST = [
 },
 {
   id: 18,
+  uid: "civ-dffe55d7-03b3-487d-b0c8-ba2767400701",
   question: "법률행위의 효력이 유효하기 위한 요건 중에서 특별효력요건에 해당하지 않는 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 17년",
   choices: [
@@ -405,6 +406,7 @@ window.BANK_CIVIL_TEST = [
 },
 {
   id: 19,
+  uid: "civ-d4eec188-11e2-4d06-bdbf-18934ba64e08",
   question: "법률행위에 관한 설명으로 옳은 것을 모두 고른 것은?",
   source: "세무사 22년",
   choices: [
@@ -425,6 +427,7 @@ window.BANK_CIVIL_TEST = [
 },
 {
   id: 20,
+  uid: "civ-d61da030-597e-457a-9d62-99242d09d3bd",
   question: "법률행위 해석에 관한 설명으로 옳지 않은 것은? (다툼이 있으면 판례에 따름)",
   source: "세무사 21년",
   choices: [
@@ -439,6 +442,7 @@ window.BANK_CIVIL_TEST = [
 },
 {
   id: 21,
+  uid: "civ-8a8719d6-8a0d-4f78-a524-27e0e466916c",
   question: "P는 자신의 토지를 임차하여 사용하던 중 이를 매수하기로 합의하였으나, 계약서에는 다른 토지로 잘못 기재하였다. 다음 설명 중 옳은 것은? (다툼이 있으면 판례에 따름)",
   source: "",
   choices: [
@@ -457,6 +461,7 @@ window.BANK_CIVIL_TEST = [
 },
 {
   id: 22,
+  uid: "civ-68ae689c-ed92-48c7-9090-c9e67fd06d13",
   question: "민법상 능력에 관한 설명으로 옳지 않은 것은? (다툼이 있으면 판례에 따름)",
   source: "",
   choices: [
@@ -471,6 +476,7 @@ window.BANK_CIVIL_TEST = [
 },
 {
   id: 23,
+  uid: "civ-b80862ea-fd40-4dd7-bcff-6d84decb207a",
   question: "제한능력자제도에 관한 설명으로 옳지 않은 것은?",
   source: "",
   choices: [
@@ -485,6 +491,7 @@ window.BANK_CIVIL_TEST = [
 },
 {
   id: 24,
+  uid: "civ-c5c7dc0b-f7a0-4baa-a31f-1e4bd438c538",
   question: "제한능력제도에 관한 설명으로 옳은 것은?",
   source: "",
   choices: [
@@ -499,6 +506,7 @@ window.BANK_CIVIL_TEST = [
 },
 {
   id: 25,
+  uid: "civ-524cd4b0-ebce-474e-944b-7d93428cfdab",
   question: "피특정후견인에 관한 설명으로 옳지 않은 것은?",
   source: "세무사 19년",
   choices: [
