@@ -1,5 +1,5 @@
 // AUTO-GENERATED
-window.BANK_CIVIL_SAMPLE = [
+window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
   {
     "id": 1,
     "uid": "civ-cc745c9e-e772-4ab6-9390-b09f22228eba",
