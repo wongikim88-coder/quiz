@@ -1,4 +1,4 @@
-window.BANK_TAXACCOUNTANT_CIVIL_2023_1 = [
+window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
   {
     "id": 1,
     "uid": "civ-cc745c9e-e772-4ab6-9390-b09f22228eba",
