@@ -234,9 +234,6 @@
   background: var(--line);
     }
 
-
-
-
     .aiBody.show{ display:flex; flex-direction: column; }
 
     /* 메시지 영역: 버블 */
@@ -1249,7 +1246,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
     </div>
   </div>
   <script src="./bank_civil_test.js"></script>
-  <script src="./bank_civil_2.js"></script>
+  <script src="./BANK_TAXACCOUNTANT_CIVIL_2023.js"></script>
   <script src="./bank_civil_3.js"></script>
   <script src="./bank_civil_4.js"></script>
 
@@ -1319,10 +1316,10 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
       },
 
             {
-        id: "accounting",
-        name: "회계학",
+        id: "civil_taxaccountant_2023",
+        name: "2023 민법 기출",
         desc: "세무사시험 대비 · 기출문제",
-        questions: []
+        questions: [BANK_TAXACCOUNTANT_CIVIL_2023]
       },
 
             {
@@ -2584,7 +2581,7 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
       const viewOrder = getViewOrder();
       const currentUid = viewOrder[state.idx];
       const q = qByUid.get(currentUid);
-      const correct = q.answerIndex;
+      
 
       const buttons = [...choicesEl.children];
       buttons[correct].classList.add("correct");
