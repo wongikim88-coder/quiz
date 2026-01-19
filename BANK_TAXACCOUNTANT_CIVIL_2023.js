@@ -1,5 +1,4 @@
-// AUTO-GENERATED
-window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
+window.BANK_TAXACCOUNTANT_CIVIL_2023_1 = [
   {
     "id": 1,
     "uid": "civ-cc745c9e-e772-4ab6-9390-b09f22228eba",
@@ -12,7 +11,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "헌법재판소의 결정이 민사에 관한 것인 때에는 민법의 법원이 된다.",
       "대법원 전원합의체 판결에서 설시된 추상적ㆍ일반적 법명제도 법원이 된다."
     ],
-    "answerIndex": null,
+    "answerIndex": 4,
     "explanation": ""
   },
   {
@@ -27,7 +26,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "신의성실 원칙의 위반과 권리의 남용은 법원의 직권조사사항이다.",
       "숙박업자는 고객의 안전을 배려하여야 할 신의칙상 보호의무를 부담한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 2,
     "explanation": ""
   },
   {
@@ -42,7 +41,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "丙이 매매계약 체결시 甲이 미성년자임을 알았더라면 乙에게 매매계약의 추인여부에 대한 확답을 촉구할 수 없다.",
       "甲이 신분증을 위조하여 丙으로 하여금 자신을 성년자로 믿게 한 경우, 乙은 매매계 약을 취소할 수 없다."
     ],
-    "answerIndex": null,
+    "answerIndex": 3,
     "explanation": ""
   },
   {
@@ -57,7 +56,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "특정후견의 심판이 있더라도 피특정후견인의 행위능력이 제한되지 않는다.",
       "한정후견종료의 심판은 장래에 향하여 효력을 가진다."
     ],
-    "answerIndex": null,
+    "answerIndex": 2,
     "explanation": ""
   },
   {
@@ -72,7 +71,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "태아는 법정대리인에 의한 수증(受贈)행위를 할 수 없다.",
       "실종선고를 받은 자는 권리능력을 상실한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 4,
     "explanation": ""
   },
   {
@@ -87,7 +86,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "재산관리인은 선량한 관리자의 주의로 직무를 처리해야 한다.",
       "법원은 재산관리인에 대해 부재자의 재산으로 보수를 지급할 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 1,
     "explanation": ""
   },
   {
@@ -102,7 +101,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "설립자가 생전처분으로 부동산을 출연하여 재단법인을 설립하는 경우, 출연자와 법인 과의 관계에서 출연부동산의 소유권은 그 이전등기가 있어야 법인에게 귀속된다.",
       "재단법인의 출연자는 재단법인이 성립한 이후에도 착오를 원인으로 출연의 의사표시 를 취소할 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 4,
     "explanation": ""
   },
   {
@@ -117,7 +116,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "대표자의 행위가 직무에 관한 행위에 해당하지 않음을 피해자가 알고 있었다 하더라 도 외형상 직무행위로 보인다면 법인은 그로 인한 손해배상책임을 진다.",
       "법인의 실질적 운영자로서 법인 사무를 집행함에도 대표자로 등기되어 있지 않은 자 는 민법 제35조에서 정한 대표자로 볼 수 없다."
     ],
-    "answerIndex": null,
+    "answerIndex": 0,
     "explanation": ""
   },
   {
@@ -132,7 +131,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "이사가 수인인 경우에 정관에 다른 규정이 없으면 각자가 법인의 내부적 사무집행을 결정한다.",
       "법인과 이사의 이익이 상반되는 사항에 대한 특별대리인은 사원총회에 의해 선임된다."
     ],
-    "answerIndex": null,
+    "answerIndex": 2,
     "explanation": ""
   },
   {
@@ -147,7 +146,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "재단법인의 기본재산을 변경하기 위해서는 정관 변경이 필요하다.",
       "정관 변경은 주무관청의 허가를 얻어야 효력이 발생한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 1,
     "explanation": ""
   },
   {
@@ -162,7 +161,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "해산등기 없이도 법인의 해산 사실을 제3자에게 대항할 수 있다.",
       "법인은 채권신고기간내의 변제금지로 인한 채권자의 지연손해에 대하여 배상책임을 진다."
     ],
-    "answerIndex": null,
+    "answerIndex": 4,
     "explanation": ""
   },
   {
@@ -177,7 +176,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "대표권 제한에 관한 정관을 위반한 대표자의 거래행위는 상대방이 선의ㆍ무과실인 경 우에 유효하다.",
       "비법인 사단의 이사가 없어서 법원이 선임한 임시이사는 원칙적으로 정식이사와 동일 한 권한을 가진다."
     ],
-    "answerIndex": null,
+    "answerIndex": 0,
     "explanation": ""
   },
   {
@@ -192,7 +191,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "동산과 부동산은 그 요건을 달리하여 취득시효의 대상이 된다.",
       "부동산 이외의 물건은 동산이다."
     ],
-    "answerIndex": null,
+    "answerIndex": 2,
     "explanation": ""
   },
   {
@@ -207,7 +206,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "천연과실은 그원물로부터 분리하는 때수취할권리의 존속기간일수의 비율로 취득한다.",
       "민법상 법정과실의 수취에 관한 규정은 강행규정이다."
     ],
-    "answerIndex": null,
+    "answerIndex": 1,
     "explanation": ""
   },
   {
@@ -222,7 +221,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "채권양도는 이행의 문제를 남기지 않는 처분행위이다.",
       "상호대가적인의미가없는출연을내용으로하는 법률행위는유상행위라고 할 수없다."
     ],
-    "answerIndex": null,
+    "answerIndex": 2,
     "explanation": ""
   },
   {
@@ -237,7 +236,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "공인중개사 자격이 없는 자가 우연한 기회에 단 1회 타인 간의 거래행위를 중개한 경 우, 그에 따른 중개수수료 지급약정이 부동산 중개보수 제한에 관한 규정들에 위반하 였다면 중개보수 약정은 규정의 한도를 초과하는 부분에서 무효이다.",
       "법률행위의 효력요건은 원칙적으로 법률행위의 효과를 주장하는 자가 증명하여야 한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 0,
     "explanation": ""
   },
   {
@@ -252,7 +251,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "의무의 강제에 의하여 얻어지는 채권자의 이익에 비하여 약정된 위약벌이 과도하게 무겁다면 반사회적 법률행위가 될 수 있다.",
       "법률행위의 성립과정에서 강박이라는 불법적 방법이 사용되었다는 이유만으로도 반사 회적 법률행위가 될 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 4,
     "explanation": ""
   },
   {
@@ -267,7 +266,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "불공정한 법률행위가 성립하기 위해서는 폭리행위자가 상대방의 궁박, 경솔 또는 무 경험을 이용하려는 의사가 있어야 한다.",
       "불공정한 법률행위가 성립하기 위해서는 급부와 반대급부 사이에 현저한 불균형이 존재 하여야 한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 1,
     "explanation": ""
   },
   {
@@ -282,7 +281,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "혼인할 의사 없이 혼인의 청약을 하였고 상대방이 청약을 믿고 승낙하였다면 혼인의 합의는 유효하다.",
       "특정 물건을 매도할 의사로 증여한다는 청약을 하였는데 상대방이 청약을 믿고 승낙 을 하였다면 매매계약이 체결된 것이다."
     ],
-    "answerIndex": null,
+    "answerIndex": 0,
     "explanation": ""
   },
   {
@@ -297,7 +296,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "가장의 채권양도에서 아직 채무를 변제하지 않은 채무자는 민법 제108조 제2항의 제3자에 해당한다.",
       "파산자가 통정한 허위의 의사표시를 통하여 발생한 가장채권을 보유하던 중 파산이 선고된 경우, 파산관재인은 민법 제108조 제2항의 제3자에 해당한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 3,
     "explanation": ""
   },
   {
@@ -312,7 +311,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "매매계약 내용의 중요 부분에 착오가 있는 경우 매수인은 매도인의 하자담보책임이 성립하는지와 상관없이 착오를 이유로 매매계약을 취소할 수 있다.",
       "과실로 인한 착오를 이유로 법률행위를 취소한 자는 그 취소로 발생한 상대방의 손해를 배상하여야 한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 4,
     "explanation": ""
   },
   {
@@ -327,7 +326,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "취소를 원하는 표의자는 자신의 착오에 중대한 과실이 없음을 스스로 증명하여야 한다.",
       "중대한 과실에 의한 착오가 표의자에게 있음을 상대방이 알면서 이를 이용하였다면 그 의사표시는 취소할 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 3,
     "explanation": ""
   },
   {
@@ -342,7 +341,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "의사결정의 자유가 완전히 박탈될 정도의 강박에 의한 의사표시는 무효로 보아야 한다.",
       "목적이 정당하더라도 수단이 부당한 때에는 위법한 강박에 해당할 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 2,
     "explanation": ""
   },
   {
@@ -357,7 +356,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "우편물이 등기취급의 방법으로 발송된 경우, 반송되는 등의 특별한 사정이 없는 한 그 무렵 수취인에게 배달되었다고 보아야 한다.",
       "의사표시의 도달은 그 효력 발생을 주장하는 자가 증명하여야 한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 1,
     "explanation": ""
   },
   {
@@ -372,7 +371,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "대리인이 성년후견개시심판을 받으면 그의 대리권은 소멸한다.",
       "매매계약의 체결과 이행에 관하여 포괄적으로 대리권을 수여받은 대리인은 특별한 사정이 없는 한 상대방에 대하여 약정된 매매대금 지급기일을 연기하여 줄 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 1,
     "explanation": ""
   },
   {
@@ -387,7 +386,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "대리인이 본인의 허락 없이 본인을 위하여 자기와 계약하였다면 그 계약은 강행법규 위반으로 확정적 무효이다.",
       "부동산 매도의 대리인이 본인을 위한 매매계약시 상대방으로부터 강박을 당한 경우, 특별한 사정이 없는 한 그 대리인은 해당 매매계약을 취소할 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 2,
     "explanation": ""
   },
   {
@@ -402,7 +401,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "대리권 남용의 경우 진의 아닌 의사표시에 관한 민법 제107조 제1항 단서를 유추적용 하는 것이 주류적 판례의 입장이다.",
       "대리행위가 대리권 남용으로 무효라 하더라도 그 행위를 기초로 하여 새로운 이해관 계를 맺은 선의의 제3자는 보호된다고 함이 주류적 판례의 입장이다."
     ],
-    "answerIndex": null,
+    "answerIndex": 0,
     "explanation": ""
   },
   {
@@ -417,7 +416,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "무권대리행위의 추인이 무권대리인에 대하여 행해지면 무권대리행위의 상대방은 그 추인에 대한 선ㆍ악의를 불문하고 철회권을 상실한다.",
       "무권대리인이 본인을 단독상속한 경우 무권대리인은 무권대리행위에 대한 상대방의 선ㆍ악의를 불문하고 추인을 거절하지 못한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 2,
     "explanation": ""
   },
   {
@@ -432,7 +431,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "본인과복대리인사이에는 내부적계약관계가인정되지 않으므로그에 기한 권리ㆍ의무도 인정되지 않는다.",
       "대리인이 대리권 소멸 후 선임한 복대리인의 대리행위에 관해서도 표현대리가 성립할 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 3,
     "explanation": ""
   },
   {
@@ -447,7 +446,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "복수의 법률행위 중 어느 한 법률행위가 무효인 경우 그들간 일체성이 인정된다면 일 부무효의 법리가 적용될 수 있다.",
       "토지거래허가구역 내의 토지에 관해 애초 허가를 잠탈하는 내용으로 체결된 매매계약 은 그 후허가구역지정이 해제되더라도 유효로 되지 않는다."
     ],
-    "answerIndex": null,
+    "answerIndex": 1,
     "explanation": ""
   },
   {
@@ -462,7 +461,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "상당 기간 계속된 근로계약이 취소된 경우 그 근로계약은 장래에 관하여만 실효된다.",
       "추인할 수 있는 때로부터 3년이 경과하면 취소권은 소멸한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 0,
     "explanation": ""
   },
   {
@@ -477,7 +476,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "ㄱ, ㄷ",
       "ㄱ, ㄴ, ㄷ"
     ],
-    "answerIndex": null,
+    "answerIndex": 3,
     "explanation": ""
   },
   {
@@ -492,7 +491,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "정지조건이든 해제조건이든 그 성취의 효과는 특별한 사정이 없는 한 소급하지 않는다.",
       "조건의 성취로 불이익을 받을 자가 과실로 신의성실에 반하여 조건의 성취를 방해한 때에는 조건의 성취가 의제될 여지가 없다."
     ],
-    "answerIndex": null,
+    "answerIndex": 3,
     "explanation": ""
   },
   {
@@ -507,7 +506,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "당사자간에 체결된 기한이익 상실 특약은 특별한 사정이 없는 한 형성권적 기한이익 상실의 특약으로 추정된다.",
       "형성권적 기한이익상실의 특약이 있는 할부채무의 경우 그 요건이 충족되면 채권자의 의사표시를 기다리지 않고 곧바로 채권 전액에 대해 소멸시효가 진행한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 4,
     "explanation": ""
   },
   {
@@ -522,7 +521,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "기간의 계산은 법령이나 재판상의 처분에 다른 정한 바가 없으면 민법규정에 의한다.",
       "기간의 말일이 토요일 또는 공휴일에 해당한 때에는 기간은 그 익일로 만료한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 0,
     "explanation": ""
   },
   {
@@ -537,7 +536,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "제척기간은 특별한 사유가 없는 한 발생한 권리를 행사할 수 있는 때로부터 기산한다.",
       "제척기간의 도과여부는 당사자의 주장이 없더라도 법원이 직권으로 조사한다."
     ],
-    "answerIndex": null,
+    "answerIndex": 3,
     "explanation": ""
   },
   {
@@ -552,7 +551,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "재판을 통하여 행사할 수 있는 권리도 포함한다.",
       "임차인의 부속물매수청구권은 형성권이다."
     ],
-    "answerIndex": null,
+    "answerIndex": 1,
     "explanation": ""
   },
   {
@@ -567,7 +566,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "점유권",
       "인격권"
     ],
-    "answerIndex": null,
+    "answerIndex": 0,
     "explanation": ""
   },
   {
@@ -582,7 +581,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "시효중단의 효력이 있는 승인은 묵시적으로도 할 수 있다.",
       "채권양수인이 채권양도의 대항요건을 갖추지 못한 상태에서 채무자를 상대로 재판상 청구를 한 경우, 소멸시효 중단사유인 재판상 청구에 해당하지 않는다."
     ],
-    "answerIndex": null,
+    "answerIndex": 4,
     "explanation": ""
   },
   {
@@ -597,7 +596,7 @@ window.BANK_TAXACCOUNTANT_CIVIL_2023 = [
       "관할청의 허가를 받기 전까지 乙은 유동적 무효를 이유로 甲에게 지급한 계약금을 부 당이득으로 반환청구할 수 있다.",
       "관할청의 허가를 받기 전이라면 乙은 甲에게 허가신청절차에 협력할 것을 소구할 수 있다."
     ],
-    "answerIndex": null,
+    "answerIndex": 3,
     "explanation": ""
   }
 ];
