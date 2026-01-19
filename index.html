@@ -1246,7 +1246,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
     </div>
   </div>
   
-  <script src="./BANK_TAXACCOUNTANT_CIVIL_2023.js"></script>
+  <script src="./BANK_TAXACCOUNTANT_CIVIL_2023_noanswer.js"></script>
 
   <script>
     // ====== 문제 은행 / 과목(확장형) ======
@@ -1316,7 +1316,7 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
         id: "civil_taxaccountant_2023",
         name: "2023 민법 기출",
         desc: "세무사시험 대비 · 기출문제",
-        questions: BANK_TAXACCOUNTANT_CIVIL_2023
+        questions: BANK_TAXACCOUNTANT_CIVIL_2023_noanswer
       },
 
             {
@@ -1397,6 +1397,11 @@ if ("serviceWorker" in navigator && (location.protocol === "http:" || location.p
 
     let app = loadAppState();
     let state = null; // ✅ 현재 과목의 퀴즈 상태(렌더 시점에 바인딩)
+
+    // ===============================
+    // 임시 기능 플래그
+    // ===============================
+    const ALLOW_SKIP = true; // true: 답 선택 없이도 다음 문제로 이동 허용
 
     // ====== DOM ======
     const card = document.getElementById("card");
@@ -2498,23 +2503,22 @@ function fisherYatesShuffle(arr) {
 
       prevBtn.disabled = (state.idx === 0);
 
-      // ✅ 다음 버튼 disabled 정책
-      // - 메인: 마지막이면 비활성(단, pendingFinish는 활성)
-      // - 메인: 보기 선택 안 했으면 비활성
-      // - 오답복습: 보기 선택 안 했으면 비활성 (마지막에서도 라운드 종료 버튼으로 쓰이므로 isLast로 막지 않음)
-
-      if (state.view === "wrongReview") {
-         nextBtn.disabled = false;
-      } else {
+      // ✅ 다음 버튼 disabled 정책 (ALLOW_SKIP 플래그 적용)
+      // - ALLOW_SKIP=true  : 답 선택 없이도 다음으로 이동 가능(임시)
+      // - ALLOW_SKIP=false : 기존 동작(보기 선택 강제)
+      if (ALLOW_SKIP) {
         nextBtn.disabled = false;
+      } else {
+        // - 메인: 마지막이면 비활성(단, pendingFinish는 활성)
+        // - 메인: 보기 선택 안 했으면 비활성
+        // - 오답복습: 보기 선택 안 했으면 비활성 (마지막에서도 라운드 종료 버튼으로 쓰이므로 isLast로 막지 않음)
+        if (state.view === "wrongReview") {
+          nextBtn.disabled = !hasAnsweredCurrent(); // 라운드 마지막이어도 눌러서 라운드 종료 가능
+        } else {
+          if (state.view === "main" && pendingFinish && isLast) nextBtn.disabled = false;
+          else nextBtn.disabled = isLast || !hasAnsweredCurrent();
+        }
       }
-        
-
-        //nextBtn.disabled = !hasAnsweredCurrent(); // 라운드 마지막이어도 눌러서 라운드 종료 가능
-      //} else {
-        //if (state.view === "main" && pendingFinish && isLast) nextBtn.disabled = false;
-        //else nextBtn.disabled = isLast || !hasAnsweredCurrent();
-      //}
 
       qText.textContent = q.question;
       // Show source (e.g., "세무사 18년") if present
@@ -2653,24 +2657,20 @@ ${formatExplanationWithHighlight(q.explanation, q.answerIndex)}`;
       if (view.length === 0) return;
 
       const isLast = (state.idx === view.length - 1);
-      // 🚫 보기 선택 없이 다음으로 이동(스와이프 포함) 방지
-      //if (!hasAnsweredCurrent()) {
-        // 메인 마지막 문제 오답(pendingFinish)에서는 '다음'이 완료 화면 이동으로 쓰이므로 예외
-        //if (!(state.view === "main" && pendingFinish && isLast)) {
-          //showBanner("보기를 선택해야 다음 문제로 이동할 수 있습니다.");
-          //return;
-        //}
-      //}
 
-
-      // ✅ 보기 선택 안 했으면 다음으로 못 감 (버튼/스와이프 공통 차단)
-      // 단, 메인 마지막 오답 pendingFinish는 완료 이동이므로 예외
-      //if (!(state.view === "main" && pendingFinish && isLast)) {
-        //if (!hasAnsweredCurrent()) {
-          //showBanner("보기를 선택해야 다음 문제로 이동할 수 있습니다.");
-          //return;
-        //}
-      //}
+      // ✅ goNext() 내부 차단 로직 (ALLOW_SKIP 플래그 적용)
+      // - ALLOW_SKIP=true  : 답 선택 없이도 다음으로 이동 가능(임시)
+      // - ALLOW_SKIP=false : 기존 동작(보기 선택 강제)
+      if (!ALLOW_SKIP) {
+        // 보기 선택 없이 다음으로 이동(버튼/스와이프 공통 차단)
+        // 단, 메인 마지막 문제 오답(pendingFinish)은 완료 화면 이동이므로 예외
+        if (!hasAnsweredCurrent()) {
+          if (!(state.view === "main" && pendingFinish && isLast)) {
+            showBanner("보기를 선택해야 다음 문제로 이동할 수 있습니다.");
+            return;
+          }
+        }
+      }
 
       // ====== 오답복습: 마지막 문제에서 '>' 누르면 라운드 종료 처리 ======
       if (state.view === "wrongReview" && isLast) {
